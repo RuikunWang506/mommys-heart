@@ -283,16 +283,16 @@ pub async fn admin_summary(case_id: &str, user: &User) -> Result<Option<CaseSumm
 }
 
 /// Up to `limit` lightweight cases whose id or name matches `search`
-/// (case-insensitive, metacharacters escaped), ordered by id. Unscoped — used by
+/// (case-insensitive, metacharacters escaped), ordered by name. Unscoped — used by
 /// the admin capability tool to find any case to grant access to. Empty search
 /// returns the first `limit` cases.
 pub async fn search_lite(search: &str, limit: i64) -> Result<Vec<CaseSummary>, sqlx::Error> {
-    let limit = limit.clamp(1, 50);
+    let limit = limit.clamp(1, 500);
     let pattern = escaped_like_pattern(search);
     let rows = sqlx::query_as::<_, SummaryRow>(&format!(
         "{}
          WHERE $1::text IS NULL OR c.id ILIKE $1 OR c.name ILIKE $1
-         ORDER BY c.id LIMIT $2",
+         ORDER BY lower(c.name), c.id LIMIT $2",
         summary_select("true")
     ))
     .bind(&pattern)
