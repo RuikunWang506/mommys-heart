@@ -295,7 +295,8 @@ pub async fn admin_search_cases(query: String) -> Result<Vec<CaseSummary>, Serve
 
     let user = require_user().await?;
     require_operations_admin(&user)?;
-    cases::search_lite(&query, 10)
+    // High enough that an empty search lists every case; the drop-down scrolls.
+    cases::search_lite(&query, 500)
         .await
         .map_err(ServerFnError::new)
 }
