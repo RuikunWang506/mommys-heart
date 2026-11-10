@@ -23,6 +23,10 @@ use crate::server_fns::admin_requests::{AdminRequest, AdminRequestStatus};
 use crate::server_fns::email_failures::EmailFailure;
 use crate::server_fns::settings::NotificationKind;
 
+/// Where an issued organizational address opens its mailbox. The approval email
+/// points new volunteers here; their Microsoft password comes from an admin.
+const OUTLOOK_SIGN_IN_URL: &str = "https://outlook.office365.com";
+
 /// A fully rendered email: the subject line and both body representations ACS
 /// expects (HTML plus a plain-text fallback for clients that prefer it).
 #[derive(Clone, Debug)]
@@ -496,8 +500,13 @@ pub fn volunteer_applicant_approved(
         Some(address) => format!(
             "<br><br>You have been given a new email address: <strong>{}</strong>. \
              That is the address you will sign in with from now on \u{2014} not the one \
-             this message was sent to.",
+             this message was sent to.\
+             <br><br>It is also your new mailbox. Open it in Outlook at \
+             <a href=\"{url}\">{url}</a> with the temporary password your administrator \
+             sends you separately. That password is separate from the one you choose \
+             with the link below.",
             escape(address),
+            url = OUTLOOK_SIGN_IN_URL,
         ),
         None => String::new(),
     };
@@ -522,7 +531,10 @@ pub fn volunteer_applicant_approved(
     let address_line = match new_email {
         Some(address) => format!(
             "\n\nYou have been given a new email address: {address}. That is the address \
-             you will sign in with from now on."
+             you will sign in with from now on.\n\nIt is also your new mailbox. Open it in \
+             Outlook at {OUTLOOK_SIGN_IN_URL} with the temporary password your administrator \
+             sends you separately. That password is separate from the one you choose \
+             with the link below."
         ),
         None => String::new(),
     };
@@ -1409,6 +1421,18 @@ pub fn samples(brand: &Brand) -> Vec<Sample> {
         key: "case_signup".to_string(),
         label: "New case signup".to_string(),
         email: case_signup(brand, "Elena Rivera", "elena@example.org", case),
+    });
+
+    samples.push(Sample {
+        key: "volunteer_applicant_approved_new_email".to_string(),
+        label: "Volunteer application approved \u{2014} with a new address".to_string(),
+        email: volunteer_applicant_approved(
+            brand,
+            "Elena",
+            "https://app.example.org/volunteer-setup?token=sample",
+            "",
+            Some("erivera@example.org"),
+        ),
     });
 
     samples.push(Sample {
