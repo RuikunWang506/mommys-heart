@@ -3,6 +3,7 @@
 
 use leptos::prelude::*;
 use leptos::task::spawn_local;
+use leptos_router::components::A;
 
 use crate::components::change_log::ChangeLog;
 use crate::server_fns::audit::AuditScope;
@@ -285,8 +286,8 @@ pub fn UserCard(
     };
 
     // --- case access -------------------------------------------------------
-    let new_case = RwSignal::new(String::new());
-    let new_case_label = RwSignal::new(String::new());
+    // Cases ticked in the picker, as (id, name), added to the draft together.
+    let picked_cases = RwSignal::new(Vec::<(String, String)>::new());
     let new_preset = RwSignal::new(CasePreset::Viewer.slug().to_string());
     let case_query = RwSignal::new(String::new());
     let case_results = RwSignal::new(Vec::<CaseSummary>::new());
@@ -385,8 +386,7 @@ pub fn UserCard(
         case_feedback.set(None);
         capability_request_note.set(String::new());
         picker_open.set(false);
-        new_case.set(String::new());
-        new_case_label.set(String::new());
+        picked_cases.set(Vec::new());
         case_query.set(String::new());
         editing.set(true);
     };
@@ -396,36 +396,34 @@ pub fn UserCard(
         case_feedback.set(None);
         capability_request_note.set(String::new());
         picker_open.set(false);
-        new_case.set(String::new());
-        new_case_label.set(String::new());
+        picked_cases.set(Vec::new());
         case_query.set(String::new());
     };
 
     let add_to_draft = move |_| {
-        let case_id = new_case.get_untracked();
-        if case_id.is_empty() {
+        let picked = picked_cases.get_untracked();
+        if picked.is_empty() {
             return;
         }
-        if let Some(row) = draft
-            .get_untracked()
-            .into_iter()
-            .find(|row| row.case_id == case_id)
-        {
-            row.removed.set(false);
-        } else {
-            let preset =
-                CasePreset::from_slug(&new_preset.get_untracked()).unwrap_or(CasePreset::Viewer);
-            let label = new_case_label.get_untracked();
+        let preset =
+            CasePreset::from_slug(&new_preset.get_untracked()).unwrap_or(CasePreset::Viewer);
+        for (case_id, label) in picked {
+            if let Some(row) = draft
+                .get_untracked()
+                .into_iter()
+                .find(|row| row.case_id == case_id)
+            {
+                row.removed.set(false);
+                continue;
+            }
             let name = if label.is_empty() {
                 case_name(&case_id)
             } else {
                 label
             };
-            draft
-                .update(|rows| rows.push(make_draft(case_id.clone(), name, preset.capabilities())));
+            draft.update(|rows| rows.push(make_draft(case_id, name, preset.capabilities())));
         }
-        new_case.set(String::new());
-        new_case_label.set(String::new());
+        picked_cases.set(Vec::new());
         case_query.set(String::new());
         picker_open.set(false);
     };
@@ -497,6 +495,23 @@ pub fn UserCard(
         });
     };
 
+    // Tick or untick a case in the picker; the list stays open for more picks.
+    let toggle_picked = move |case_id: String, name: String| {
+        picked_cases.update(|picked| {
+            if let Some(index) = picked.iter().position(|(id, _)| *id == case_id) {
+                picked.remove(index);
+            } else {
+                picked.push((case_id, name));
+            }
+        });
+    };
+    let in_draft = move |case_id: &str| {
+        draft.with(|rows| {
+            rows.iter()
+                .any(|row| row.case_id == case_id && !row.removed.get())
+        })
+    };
+
     let case_result_list = move || {
         if !picker_open.get() {
             return ().into_any();
@@ -518,18 +533,13 @@ pub fn UserCard(
             .into_iter()
             .enumerate()
             .map(|(index, case)| {
-                let case_id = case.id.clone();
+                let case_id = StoredValue::new(case.id.clone());
+                let name = StoredValue::new(case.name.clone());
                 let label = format!("{} ({})", case.name, case.id);
                 let option_id = format!("{}-{index}", case_results_id.get_value());
-                let select = {
-                    let case_id = case_id.clone();
-                    let name = case.name.clone();
-                    move |_| {
-                        new_case.set(case_id.clone());
-                        new_case_label.set(name.clone());
-                        picker_open.set(false);
-                        active_case_result.set(None);
-                    }
+                let already = move || in_draft(&case_id.get_value());
+                let is_picked = move || {
+                    picked_cases.with(|picked| picked.iter().any(|(id, _)| *id == case_id.get_value()))
                 };
                 view! {
                     <button
@@ -537,15 +547,30 @@ pub fn UserCard(
                         type="button"
                         role="option"
                         tabindex="-1"
-                        aria-selected=move || (active_case_result.get() == Some(index)).to_string()
-                        on:click=select
+                        aria-selected=move || is_picked().to_string()
+                        prop:disabled=already
+                        on:mousedown=|event| event.prevent_default()
+                        on:click=move |_| toggle_picked(case_id.get_value(), name.get_value())
                         class=move || if active_case_result.get() == Some(index) {
-                            "block w-full truncate bg-slate-800 px-3 py-1.5 text-left text-sm text-slate-100"
+                            "flex w-full items-center gap-2 bg-slate-800 px-3 py-1.5 text-left text-sm text-slate-100 disabled:opacity-50"
                         } else {
-                            "block w-full truncate px-3 py-1.5 text-left text-sm text-slate-200 hover:bg-slate-800"
+                            "flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-slate-200 hover:bg-slate-800 disabled:opacity-50"
                         }
                     >
-                        {label}
+                        <span
+                            aria-hidden="true"
+                            class=move || if is_picked() || already() {
+                                "flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border border-primary-500 bg-primary-500 text-[10px] leading-none text-white"
+                            } else {
+                                "flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border border-slate-600 bg-slate-950 text-[10px] leading-none text-white"
+                            }
+                        >
+                            {move || (is_picked() || already()).then_some("\u{2713}")}
+                        </span>
+                        <span class="min-w-0 flex-1 truncate">{label}</span>
+                        {move || already().then(|| view! {
+                            <span class="shrink-0 text-xs text-slate-500">"Already added"</span>
+                        })}
                     </button>
                 }
                 .into_any()
@@ -555,7 +580,8 @@ pub fn UserCard(
             <div
                 id=case_results_id.get_value()
                 role="listbox"
-                class="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-slate-700 bg-slate-900"
+                aria-multiselectable="true"
+                class="absolute z-10 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-slate-700 bg-slate-900"
             >
                 {rows}
             </div>
@@ -1203,20 +1229,14 @@ pub fn UserCard(
                                     .map(|index| format!("{}-{index}", case_results_id.get_value()))
                             }
                             class="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
-                            placeholder="Case name or ID"
-                            prop:value=move || {
-                                let label = new_case_label.get();
-                                if label.is_empty() { case_query.get() } else { label }
-                            }
+                            placeholder="Case name or ID — tick several"
+                            prop:value=move || case_query.get()
                             on:focus=move |_| {
                                 picker_open.set(true);
                                 active_case_result.set(None);
-                                new_case.set(String::new());
-                                new_case_label.set(String::new());
                             }
+                            on:blur=move |_| picker_open.set(false)
                             on:input=move |event| {
-                                new_case.set(String::new());
-                                new_case_label.set(String::new());
                                 picker_open.set(true);
                                 active_case_result.set(None);
                                 case_query.set(event_target_value(&event));
@@ -1244,10 +1264,9 @@ pub fn UserCard(
                                                 .get(index)
                                                 .cloned()
                                             {
-                                                new_case.set(case.id);
-                                                new_case_label.set(case.name);
-                                                picker_open.set(false);
-                                                active_case_result.set(None);
+                                                if !in_draft(&case.id) {
+                                                    toggle_picked(case.id, case.name);
+                                                }
                                             }
                                         }
                                     }
@@ -1285,12 +1304,39 @@ pub fn UserCard(
                     <button
                         type="button"
                         on:click=add_to_draft
-                        prop:disabled=move || new_case.get().is_empty()
+                        prop:disabled=move || picked_cases.with(Vec::is_empty)
                         class="rounded-full bg-primary-500 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
                     >
-                        "Add"
+                        {move || match picked_cases.with(Vec::len) {
+                            0 | 1 => "Add".to_string(),
+                            n => format!("Add {n} cases"),
+                        }}
                     </button>
                 </div>
+                <Show when=move || !picked_cases.with(Vec::is_empty)>
+                    <div class="mt-2 flex flex-wrap items-center gap-1.5" aria-live="polite">
+                        <span class="text-xs text-slate-500">"Selected:"</span>
+                        <For
+                            each=move || picked_cases.get()
+                            key=|(id, _)| id.clone()
+                            let:picked
+                        >
+                            {
+                                let (remove_id, name) = picked;
+                                view! {
+                                    <button
+                                        type="button"
+                                        title="Remove from selection"
+                                        on:click=move |_| picked_cases.update(|all| all.retain(|(existing, _)| *existing != remove_id))
+                                        class="rounded-full bg-slate-800 px-2 py-0.5 text-xs text-slate-200 hover:bg-slate-700"
+                                    >
+                                        {name} " ×"
+                                    </button>
+                                }
+                            }
+                        </For>
+                    </div>
+                </Show>
             };
             let request_note = (!can_edit_capabilities_directly).then(|| {
                 view! {
@@ -1453,7 +1499,12 @@ pub fn UserCard(
                         };
                         view! {
                             <div class="border-b border-slate-800 py-3 last:border-b-0">
-                                <span class="text-sm font-medium text-slate-200">{name}</span>
+                                <A
+                                    href=format!("/admin/cases/{}#case-team", assignment.case_id)
+                                    attr:class="text-sm font-medium text-primary-300 hover:text-primary-200"
+                                >
+                                    {name}
+                                </A>
                                 <div class="mt-2 flex flex-wrap gap-1.5">{capability_badges}</div>
                             </div>
                         }

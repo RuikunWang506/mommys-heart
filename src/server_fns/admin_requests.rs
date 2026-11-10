@@ -423,7 +423,7 @@ pub async fn decide_admin_request(
 }
 
 #[cfg(feature = "ssr")]
-fn validate_note(note: String) -> Result<String, ServerFnError> {
+pub(crate) fn validate_note(note: String) -> Result<String, ServerFnError> {
     let note = note.trim().to_string();
     if note.chars().count() > 1_000 {
         Err(ServerFnError::new(
