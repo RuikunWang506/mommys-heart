@@ -14,6 +14,7 @@ pub mod case_documents;
 pub mod case_note_documents;
 pub mod case_notes;
 pub mod case_properties;
+pub mod case_team;
 pub mod cases;
 pub mod channel_notifications;
 pub mod channels;

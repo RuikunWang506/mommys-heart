@@ -335,28 +335,41 @@ pub async fn create_case_capabilities(
     changes: &[(String, Option<Vec<CaseCapability>>)],
     note: &str,
 ) -> Result<Vec<AdminRequest>, Error> {
+    let changes = changes
+        .iter()
+        .map(|(case_id, caps)| (target_user_id.to_string(), case_id.clone(), caps.clone()))
+        .collect::<Vec<_>>();
+    create_case_capability_requests(requester_id, &changes, note).await
+}
+
+/// File case-permission requests spanning any users and cases, as
+/// `(target_user_id, case_id, capabilities)` rows. All are created or none are.
+pub async fn create_case_capability_requests(
+    requester_id: &str,
+    changes: &[(String, String, Option<Vec<CaseCapability>>)],
+    note: &str,
+) -> Result<Vec<AdminRequest>, Error> {
     if changes.is_empty() {
         return Err(Error::InvalidData(
             "Choose at least one case-permission change.".to_string(),
         ));
     }
     let mut tx = pool().begin().await?;
-    let target_exists: Option<String> =
-        sqlx::query_scalar("SELECT role FROM users WHERE id = $1 FOR SHARE")
-            .bind(target_user_id)
-            .fetch_optional(&mut *tx)
-            .await?;
-    let Some(target_role) = target_exists else {
-        return Err(Error::NotFound);
-    };
-    if target_role == AccountRole::Deactivated.slug() {
-        return Err(Error::InvalidData(
-            "This account is deactivated. Reactivate it first.".to_string(),
-        ));
-    }
-
     let mut request_ids = Vec::with_capacity(changes.len());
-    for (case_id, requested_capabilities) in changes {
+    for (target_user_id, case_id, requested_capabilities) in changes {
+        let target_role: Option<String> =
+            sqlx::query_scalar("SELECT role FROM users WHERE id = $1 FOR SHARE")
+                .bind(target_user_id)
+                .fetch_optional(&mut *tx)
+                .await?;
+        let Some(target_role) = target_role else {
+            return Err(Error::NotFound);
+        };
+        if target_role == AccountRole::Deactivated.slug() {
+            return Err(Error::InvalidData(
+                "This account is deactivated. Reactivate it first.".to_string(),
+            ));
+        }
         let case_exists: Option<i32> =
             sqlx::query_scalar("SELECT 1 FROM cases WHERE id = $1 FOR SHARE")
                 .bind(case_id)
