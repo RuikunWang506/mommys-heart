@@ -446,13 +446,15 @@ pub async fn finish_task(task: &MailTaskRecord) -> Result<(), sqlx::Error> {
 
     // Log the send on every contact it reached, in the same transaction as the
     // outcomes, so a contact's outreach history matches what was delivered.
-    // The unique index on (mail_task_id, contact_id) keeps a retry from
-    // logging twice.
+    // The entry carries the subject and the message itself, so the history shows
+    // what was sent. The unique index on (mail_task_id, contact_id) keeps a
+    // retry from logging twice.
     sqlx::query(
         "INSERT INTO contact_communications
              (id, contact_id, kind, body, author_id, author_name, occurred_at, mail_task_id)
          SELECT 'comm-' || replace(gen_random_uuid()::text, '-', ''),
-                r.contact_id, 'outreach', 'Group email: ' || t.subject,
+                r.contact_id, 'outreach',
+                'Group email: ' || t.subject || E'\\n\\n' || t.body,
                 t.created_by_id, t.created_by_name,
                 COALESCE(r.finished_at, now()), t.id
          FROM contact_mail_recipients r
