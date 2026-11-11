@@ -114,6 +114,13 @@ impl DocumentStore for LocalStore {
     }
 
     async fn ensure_named_root(&self, name: &str) -> Result<FolderRef, String> {
+        // "/" means the store itself, matching the Graph store's library root.
+        if name.trim() == "/" {
+            return Ok(FolderRef {
+                item_id: String::new(),
+                web_url: format!("file://{}", self.root.display()),
+            });
+        }
         self.ensure_folder("", name).await
     }
 

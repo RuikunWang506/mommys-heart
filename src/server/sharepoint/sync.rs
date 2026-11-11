@@ -74,8 +74,19 @@ pub async fn ensure_case_folder(case_id: &str) -> Result<db::CaseFolderRef, Stri
     // and never mirrored into a table.
     for spec in NEW_CASE_FOLDERS {
         let top = store.ensure_folder(&case_folder.item_id, spec.name).await?;
+        // Children are paths listed parents first, so each parent's id is known
+        // by the time its children are reached.
+        let mut ids = std::collections::HashMap::new();
         for child in spec.children {
-            store.ensure_folder(&top.item_id, child).await?;
+            let (parent, name) = match child.rsplit_once('/') {
+                Some((parent, name)) => (ids.get(parent).cloned().unwrap_or_default(), name),
+                None => (top.item_id.clone(), *child),
+            };
+            if parent.is_empty() {
+                return Err(format!("folder \"{child}\" is listed before its parent"));
+            }
+            let folder = store.ensure_folder(&parent, name).await?;
+            ids.insert(child.to_string(), folder.item_id);
         }
     }
 

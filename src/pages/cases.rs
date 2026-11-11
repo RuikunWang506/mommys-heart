@@ -1098,6 +1098,10 @@ pub fn CaseDetail(
     let delete_busy = RwSignal::new(false);
     let new_folder_name = RwSignal::new(String::new());
     let upload_busy = RwSignal::new(false);
+    // The document type chosen at the case root: the folder the upload is filed in.
+    let upload_target = RwSignal::new(
+        crate::helpers::new_case_folders::UPLOADS_FOLDER.to_string(),
+    );
     let docs_file_ref: NodeRef<leptos::html::Input> = owner.with_value(|o| o.with(NodeRef::new));
 
     {
@@ -1155,7 +1159,9 @@ pub fn CaseDetail(
             return;
         }
         let case_id = case_sv.get_value();
-        let path = open_folder.get_untracked();
+        // At the root, the picked document type decides the folder.
+        let open = open_folder.get_untracked();
+        let path = if open.is_empty() { upload_target.get_untracked() } else { open };
         upload_busy.set(true);
         docs_error.set(String::new());
         spawn_local(async move {
@@ -1475,16 +1481,56 @@ pub fn CaseDetail(
                 ().into_any()
             };
 
-            // Adding to the open folder. At the very top there is nowhere to put
-            // a file: the standing folders are the case's filing scheme, and a
-            // file belongs inside one of them.
+            // Adding to the open folder. At the very top a file still belongs in
+            // one of the standing folders, so the uploader picks a document type,
+            // which names that folder; Uploads is the default.
             let tools = if !found.can_upload {
                 ().into_any()
             } else if found.path.is_empty() {
+                // Only types under folders this viewer can see; the server checks again.
+                let visible: Vec<String> = found.entries.iter().map(|e| e.name.clone()).collect();
+                let options = crate::helpers::new_case_folders::upload_targets()
+                    .into_iter()
+                    .filter(|path| {
+                        let top = path.split('/').next().unwrap_or_default();
+                        visible.iter().any(|name| name.eq_ignore_ascii_case(top))
+                    })
+                    .map(|path| {
+                        let label = path.replace('/', " \u{203a} ");
+                        view! { <option value=path.clone()>{label}</option> }
+                    })
+                    .collect_view();
                 view! {
-                    <p class="mt-4 border-t border-slate-800 pt-4 text-xs text-slate-500">
-                        "Open a folder to add files to it."
-                    </p>
+                    <div class="mt-4 space-y-2 border-t border-slate-800 pt-4">
+                        <label class="block text-xs font-medium text-slate-300">"Document type"</label>
+                        <select
+                            class=input_class
+                            prop:value=move || upload_target.get()
+                            on:change=move |ev| upload_target.set(event_target_value(&ev))
+                        >
+                            {options}
+                        </select>
+                        <div class="flex flex-col gap-2 sm:flex-row">
+                            <input
+                                node_ref=docs_file_ref
+                                type="file"
+                                accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+                                class="block w-full text-sm text-slate-300 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-800 file:px-3 file:py-2 file:text-sm file:font-medium file:text-slate-200 hover:file:bg-slate-700"
+                            />
+                            <button
+                                on:click=upload_here
+                                prop:disabled=move || upload_busy.get()
+                                class="shrink-0 rounded-lg bg-primary-500 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-60"
+                            >
+                                {move || {
+                                    if upload_busy.get() { "Uploading\u{2026}" } else { "Upload" }
+                                }}
+                            </button>
+                        </div>
+                        <p class="text-xs text-slate-500">
+                            "PDF, images, and Office documents up to 25 MB. Not sure? Leave it as Uploads."
+                        </p>
+                    </div>
                 }
                 .into_any()
             } else {

@@ -309,6 +309,13 @@ impl DocumentStore for GraphStore {
         let root_id = library_root["id"]
             .as_str()
             .ok_or_else(|| "library root had no id".to_string())?;
+        // "/" files straight into the library, as the CLIENTS library expects.
+        if name.trim() == "/" {
+            return Ok(FolderRef {
+                item_id: root_id.to_string(),
+                web_url: library_root["webUrl"].as_str().unwrap_or_default().to_string(),
+            });
+        }
         self.ensure_folder(root_id, name).await
     }
 
