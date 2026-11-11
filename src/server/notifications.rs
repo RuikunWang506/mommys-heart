@@ -368,6 +368,7 @@ pub fn notify_volunteer_applicant_decision(
     decision_note: String,
     setup_url: Option<String>,
     new_email: Option<String>,
+    temporary_password: Option<String>,
 ) {
     let Some(cfg) = configured_email() else {
         return;
@@ -385,6 +386,7 @@ pub fn notify_volunteer_applicant_decision(
                 &setup_url,
                 &decision_note,
                 new_email.as_deref(),
+                temporary_password.as_deref(),
             )
         } else {
             templates::volunteer_applicant_declined(&brand, &decision_note)

@@ -363,6 +363,7 @@ fn ApplicationCard(
     let change_email = RwSignal::new(false);
     let new_email = RwSignal::new(String::new());
     let confirm_email = RwSignal::new(String::new());
+    let temp_password = RwSignal::new(String::new());
     let deciding = RwSignal::new(false);
     let error = RwSignal::new(None::<String>);
     let note_id = StoredValue::new(format!("volunteer-application-note-{}", item.id));
@@ -371,6 +372,8 @@ fn ApplicationCard(
     let new_email_id = StoredValue::new(format!("volunteer-application-email-{}", item.id));
     let confirm_email_id =
         StoredValue::new(format!("volunteer-application-email-confirm-{}", item.id));
+    let temp_password_id =
+        StoredValue::new(format!("volunteer-application-temp-password-{}", item.id));
     let contact_href = format!("mailto:{email}");
     let setup_expired = RwSignal::new(item.setup_expired);
     let setup_expires_at = RwSignal::new(item.setup_expires_at.clone());
@@ -447,11 +450,16 @@ fn ApplicationCard(
         }
         // Only an approval may carry an address change; the server enforces the
         // same rule and re-checks the confirmation.
-        let (wanted_email, wanted_confirm) = if approve && change_email.get_untracked() {
-            (new_email.get_untracked(), confirm_email.get_untracked())
-        } else {
-            (String::new(), String::new())
-        };
+        let (wanted_email, wanted_confirm, wanted_password) =
+            if approve && change_email.get_untracked() {
+                (
+                    new_email.get_untracked(),
+                    confirm_email.get_untracked(),
+                    temp_password.get_untracked(),
+                )
+            } else {
+                (String::new(), String::new(), String::new())
+            };
         if !wanted_email.trim().is_empty()
             && wanted_email.trim().to_lowercase() != wanted_confirm.trim().to_lowercase()
         {
@@ -483,6 +491,7 @@ fn ApplicationCard(
                         decision_note,
                         wanted_email,
                         wanted_confirm,
+                        wanted_password,
                     )
                     .await
                 }
@@ -755,6 +764,33 @@ fn ApplicationCard(
                                             .set(event_target_value(&event))
                                     />
                                 </div>
+                                // Only a signup's welcome email can carry it.
+                                <Show when=move || source == Source::Applicant>
+                                    <div>
+                                        <label
+                                            class="mb-1 block text-xs font-medium text-slate-300"
+                                            for=temp_password_id.get_value()
+                                        >
+                                            "Temporary Microsoft password (optional)"
+                                        </label>
+                                        <input
+                                            id=temp_password_id.get_value()
+                                            type="text"
+                                            class="min-w-0 w-full rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm text-slate-100 placeholder:text-slate-500"
+                                            placeholder="From the Microsoft 365 admin center"
+                                            maxlength="256"
+                                            autocomplete="off"
+                                            spellcheck="false"
+                                            prop:disabled=move || deciding.get()
+                                            prop:value=move || temp_password.get()
+                                            on:input=move |event| temp_password
+                                                .set(event_target_value(&event))
+                                        />
+                                        <p class="mt-1 text-xs text-slate-500">
+                                            "Included in their welcome email with the Outlook link. It is not saved in the CRM."
+                                        </p>
+                                    </div>
+                                </Show>
                             </div>
                         </Show>
                     </div>

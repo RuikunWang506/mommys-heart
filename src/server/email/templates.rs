@@ -478,12 +478,29 @@ pub fn volunteer_applicant_approved(
     setup_url: &str,
     decision_note: &str,
     new_email: Option<&str>,
+    temporary_password: Option<&str>,
 ) -> RenderedEmail {
     let theme = Theme {
         accent: palette::color("emerald-300"),
         emoji: "\u{2705}",
     };
     let subject = format!("[{}] Finish setting up your volunteer account", brand.name);
+    // Given only on the first approval; a renewed link points back to it.
+    let password_html = match temporary_password {
+        Some(password) => format!(
+            "with this temporary password: <strong>{}</strong>. Microsoft will ask you to \
+             choose a new one the first time you sign in",
+            escape(password)
+        ),
+        None => "with the temporary password your administrator gave you".to_string(),
+    };
+    let password_text = match temporary_password {
+        Some(password) => format!(
+            "with this temporary password: {password}. Microsoft will ask you to choose a \
+             new one the first time you sign in"
+        ),
+        None => "with the temporary password your administrator gave you".to_string(),
+    };
     let greeting = if first_name.trim().is_empty() {
         String::new()
     } else {
@@ -502,9 +519,8 @@ pub fn volunteer_applicant_approved(
              That is the address you will sign in with from now on \u{2014} not the one \
              this message was sent to.\
              <br><br>It is also your new mailbox. Open it in Outlook at \
-             <a href=\"{url}\">{url}</a> with the temporary password your administrator \
-             sends you separately. That password is separate from the one you choose \
-             with the link below.",
+             <a href=\"{url}\">{url}</a> {password_html}. That password is separate from \
+             the one you choose with the link below.",
             escape(address),
             url = OUTLOOK_SIGN_IN_URL,
         ),
@@ -532,9 +548,8 @@ pub fn volunteer_applicant_approved(
         Some(address) => format!(
             "\n\nYou have been given a new email address: {address}. That is the address \
              you will sign in with from now on.\n\nIt is also your new mailbox. Open it in \
-             Outlook at {OUTLOOK_SIGN_IN_URL} with the temporary password your administrator \
-             sends you separately. That password is separate from the one you choose \
-             with the link below."
+             Outlook at {OUTLOOK_SIGN_IN_URL} {password_text}. That password is separate \
+             from the one you choose with the link below."
         ),
         None => String::new(),
     };
@@ -1432,6 +1447,7 @@ pub fn samples(brand: &Brand) -> Vec<Sample> {
             "https://app.example.org/volunteer-setup?token=sample",
             "",
             Some("erivera@example.org"),
+            Some("Sample-Temp-2026"),
         ),
     });
 

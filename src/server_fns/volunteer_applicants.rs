@@ -182,7 +182,8 @@ pub async fn list_volunteer_applicants() -> Result<Vec<VolunteerApplicant>, Serv
 /// On approval the admin may set the official email address the new account will
 /// sign in with. It must be typed twice. Either way the applicant is emailed at
 /// the address they applied with; an approval carries the setup link, which is
-/// the only thing that can create the account.
+/// the only thing that can create the account. With a new address, the admin may
+/// add its temporary Microsoft password; it goes in that email and is never saved.
 #[server(prefix = "/api")]
 pub async fn decide_volunteer_applicant(
     applicant_id: String,
@@ -190,6 +191,7 @@ pub async fn decide_volunteer_applicant(
     note: String,
     new_email: String,
     confirm_new_email: String,
+    #[server(default)] temporary_password: String,
 ) -> Result<(), ServerFnError> {
     use crate::server::auth::generate_token;
     use crate::server::db::volunteer_applicants;
@@ -224,6 +226,15 @@ pub async fn decide_volunteer_applicant(
     } else {
         None
     };
+    // Only meaningful alongside a new mailbox.
+    let temporary_password = temporary_password.trim().to_string();
+    if temporary_password.chars().count() > 256 {
+        return Err(ServerFnError::new(
+            "The temporary password must be 256 characters or fewer.",
+        ));
+    }
+    let temporary_password =
+        (assigned_email.is_some() && !temporary_password.is_empty()).then_some(temporary_password);
 
     let setup_token = generate_token();
     volunteer_applicants::decide(
@@ -246,6 +257,7 @@ pub async fn decide_volunteer_applicant(
         note,
         setup_url,
         assigned_email,
+        temporary_password,
     );
     Ok(())
 }
@@ -315,6 +327,7 @@ pub async fn renew_volunteer_setup_link(
         applicant.decision_note,
         Some(url),
         (!applicant.assigned_email.is_empty()).then_some(applicant.assigned_email),
+        None,
     );
     Ok(RenewedSetupLink {
         link: None,
