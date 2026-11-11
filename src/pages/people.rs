@@ -15,6 +15,7 @@ use crate::components::loading::Loading;
 use crate::helpers::format::badge_pill;
 use crate::pages::contacts::ContactOutreachPanel;
 use crate::server_fns::audit::AuditScope;
+use crate::server_fns::contact_directory::get_contact;
 use crate::server_fns::contacts::{
     load_contact, set_contact_account, set_contact_archived, unlinked_accounts, Contact,
 };
@@ -39,6 +40,8 @@ pub fn ContactDetail(contact_id: String) -> impl IntoView {
     let editing = RwSignal::new(false);
     let reload = RwSignal::new(0u32);
     let organizations = RwSignal::new(Vec::<(String, String)>::new());
+    // Shown beside the name so it is clear at a glance how they connect to us.
+    let category_labels = RwSignal::new(Vec::<String>::new());
 
     Effect::new(move |_| {
         spawn_local(async move {
@@ -60,6 +63,11 @@ pub fn ContactDetail(contact_id: String) -> impl IntoView {
                 Err(e) => error.set(err_text(e)),
             }
             loading.set(false);
+        });
+        spawn_local(async move {
+            if let Ok(details) = get_contact(id.get_value()).await {
+                category_labels.set(details.contact.categories.iter().map(|c| c.label()).collect());
+            }
         });
     });
 
@@ -113,6 +121,17 @@ pub fn ContactDetail(contact_id: String) -> impl IntoView {
                                             <span class=badge_pill(t.badge_classes())>{t.label()}</span>
                                         })
                                         .collect_view()}
+                                    {move || {
+                                        category_labels
+                                            .get()
+                                            .into_iter()
+                                            .map(|label| view! {
+                                                <span class=badge_pill("bg-primary-500/15 text-primary-300 ring-1 ring-primary-500/30")>
+                                                    {label}
+                                                </span>
+                                            })
+                                            .collect_view()
+                                    }}
                                 </div>
                             </div>
                             <Show when=move || can_manage>
