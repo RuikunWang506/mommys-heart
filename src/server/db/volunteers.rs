@@ -84,6 +84,7 @@ struct VolunteerRow {
     has_ssn: bool,
     phone: String,
     home_address: String,
+    personal_email: String,
     emergency_first_name: String,
     emergency_last_name: String,
     emergency_relationship: String,
@@ -126,6 +127,7 @@ impl From<VolunteerRow> for VolunteerApplication {
                 has_ssn: row.has_ssn,
                 phone: row.phone,
                 home_address: row.home_address,
+                personal_email: row.personal_email,
                 emergency_first_name: row.emergency_first_name,
                 emergency_last_name: row.emergency_last_name,
                 emergency_relationship: row.emergency_relationship,
@@ -152,7 +154,7 @@ impl From<VolunteerRow> for VolunteerApplication {
 const SELECT_COLUMNS: &str =
     "status, agreement_version, agreed_at, decided_by_name, decision_note, decided_at,
      skills_focus, volunteer_role, to_char(date_of_birth, 'YYYY-MM-DD') AS date_of_birth,
-     (ssn <> '') AS has_ssn, phone, home_address, emergency_first_name, emergency_last_name,
+     (ssn <> '') AS has_ssn, phone, home_address, personal_email, emergency_first_name, emergency_last_name,
      emergency_relationship, emergency_phone, legal_name, signature_name,
      signer_is_guardian, guardian_name, guardian_relationship, guardian_email, signed_at,
      electronic_consent, resume_file_name, resume_size_bytes, resume_uploaded_at";

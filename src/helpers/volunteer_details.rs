@@ -200,6 +200,9 @@ pub struct VolunteerDetailsView {
     pub phone: String,
     #[serde(default)]
     pub home_address: String,
+    /// The address they applied with, kept once they sign in with an organizational one.
+    #[serde(default)]
+    pub personal_email: String,
     pub emergency_first_name: String,
     pub emergency_last_name: String,
     pub emergency_relationship: String,

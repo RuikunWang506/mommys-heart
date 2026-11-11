@@ -167,12 +167,17 @@ pub fn VolunteerDetailsPanel(
     let read_only = move || {
         let d = details.get();
         let signed_by_guardian = d.signer_is_guardian;
+        let personal_email = d.personal_email.clone();
+        let has_personal_email = !personal_email.is_empty();
         view! {
             <div class="mt-2">
                 <DetailRow label="Skills and area of focus" value=d.skills_focus.clone() />
                 <DetailRow label="Volunteer role" value=d.volunteer_role.clone() />
                 <DetailRow label="Date of birth" value=format_dob(&d.date_of_birth) />
                 {ssn_row()}
+                <Show when=move || has_personal_email>
+                    <DetailRow label="Personal email" value=personal_email.clone() />
+                </Show>
                 <DetailRow label="Phone" value=d.phone.clone() />
                 <DetailRow label="Home address" value=d.home_address.clone() />
                 <DetailRow label="Emergency contact" value=d.emergency_full_name() />

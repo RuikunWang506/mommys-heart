@@ -163,6 +163,8 @@ impl From<ApplicantRow> for VolunteerApplicant {
                 has_ssn: row.has_ssn,
                 phone: row.phone,
                 home_address: row.home_address,
+                // An applicant has no account yet, so the record's own email is the personal one.
+                personal_email: String::new(),
                 emergency_first_name: row.emergency_first_name,
                 emergency_last_name: row.emergency_last_name,
                 emergency_relationship: row.emergency_relationship,
@@ -553,7 +555,7 @@ pub async fn complete(token: &str, password_hash: &str) -> Result<(String, Strin
              emergency_first_name, emergency_last_name, emergency_relationship,
              emergency_phone, volunteer_role, legal_name, signature_name,
              signer_is_guardian, guardian_name, guardian_relationship, guardian_email,
-             electronic_consent, signed_at, home_address
+             electronic_consent, signed_at, home_address, personal_email
          )
          SELECT $1, 'approved', a.agreement_version, a.agreed_at, a.decided_by,
                 a.decided_by_name, a.decision_note, a.decided_at, a.skills_focus,
@@ -561,7 +563,10 @@ pub async fn complete(token: &str, password_hash: &str) -> Result<(String, Strin
                 a.emergency_last_name, a.emergency_relationship, a.emergency_phone,
                 a.volunteer_role, a.legal_name, a.signature_name, a.signer_is_guardian,
                 a.guardian_name, a.guardian_relationship, a.guardian_email,
-                a.electronic_consent, a.signed_at, a.home_address
+                a.electronic_consent, a.signed_at, a.home_address,
+                -- Kept only when an organizational address replaces it.
+                CASE WHEN a.assigned_email <> '' AND lower(a.assigned_email) <> lower(a.email)
+                     THEN a.email ELSE '' END
          FROM volunteer_applicants a WHERE a.id = $2",
     )
     .bind(&user_id)
