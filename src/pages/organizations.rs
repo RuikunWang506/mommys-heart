@@ -34,9 +34,9 @@ use crate::server_fns::property_filters::{
 };
 use crate::state::AppState;
 
-const PANEL: &str = "rounded-xl border border-slate-800 bg-slate-900 p-5";
+const PANEL: &str = "rounded-card border border-slate-800 bg-slate-900 shadow-card p-5";
 const INPUT: &str =
-    "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:border-primary-500 focus:outline-none";
+    "w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:border-primary-500 focus:outline-none";
 const LABEL: &str = "text-xs font-medium text-slate-400";
 
 /// Canonical top-level Organizations list/detail page.
@@ -246,14 +246,14 @@ fn OrganizationDirectory() -> impl IntoView {
                     <div class="flex shrink-0 flex-wrap gap-2">
                         <A
                             href="/properties/bulk?subject=organization"
-                            attr:class="rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800"
+                            attr:class="rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800"
                         >
                             "Bulk edit properties"
                         </A>
                         <Show when=move || can_import>
                             <A
                                 href="/import?subject=organization"
-                                attr:class="rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800"
+                                attr:class="rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800"
                             >
                                 "Import from file"
                             </A>
@@ -261,7 +261,7 @@ fn OrganizationDirectory() -> impl IntoView {
                         <button
                             type="button"
                             on:click=move |_| creating.update(|c| *c = !*c)
-                            class="shrink-0 rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600"
+                            class="shrink-0 rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600"
                         >
                             {move || if creating.get() { "Cancel" } else { "+ New organization" }}
                         </button>
@@ -318,7 +318,7 @@ fn OrganizationDirectory() -> impl IntoView {
             <button
                 type="button"
                 on:click=apply
-                class="mt-3 rounded-lg bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-600"
+                class="mt-3 rounded-full bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-600"
             >
                 "Apply filters"
             </button>
@@ -336,7 +336,7 @@ fn OrganizationDirectory() -> impl IntoView {
                 <span>"Showing " {move || items.get().len()} " of " {move || total.get()} " organizations"</span>
                 <Show when=move || (items.get().len() as i64) < total.get()>
                     <button type="button" on:click=move |_| window.update(|value| *value += 50)
-                        class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-800">
+                        class="rounded-full border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-800">
                         "Load more"
                     </button>
                 </Show>
@@ -443,14 +443,14 @@ fn OrganizationDetail(organization_id: String) -> impl IntoView {
                                     <button
                                         type="button"
                                         on:click=move |_| editing.update(|e| *e = !*e)
-                                        class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
+                                        class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
                                     >
                                         {move || if editing.get() { "Cancel" } else { "Edit" }}
                                     </button>
                                     <button
                                         type="button"
                                         on:click=toggle_archive
-                                        class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800"
+                                        class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800"
                                     >
                                         {if archived { "Restore" } else { "Archive" }}
                                     </button>
@@ -529,7 +529,7 @@ fn OrganizationDetail(organization_id: String) -> impl IntoView {
                         <span>"Showing " {move || grants.get().len()} " of " {move || grant_total.get()} " grants"</span>
                         <Show when=move || (grants.get().len() as i64) < grant_total.get()>
                             <button type="button" on:click=move |_| grant_window.update(|value| *value += 50)
-                                class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-800">
+                                class="rounded-full border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-800">
                                 "Load more grants"
                             </button>
                         </Show>
@@ -618,7 +618,7 @@ fn OrganizationPeoplePanel(
                     {if can_manage {
                         view! {
                         <button type="button" on:click=unlink prop:disabled=move || busy.get()
-                            class="rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-400 hover:bg-slate-800 disabled:opacity-50">
+                            class="rounded-full border border-slate-700 px-2 py-1 text-xs text-slate-400 hover:bg-slate-800 disabled:opacity-50">
                             "Remove"
                         </button>
                         }.into_any()
@@ -654,11 +654,11 @@ fn OrganizationPeoplePanel(
                 {if can_manage {
                     view! { <div class="flex gap-2">
                         <button type="button" on:click=move |_| { creating.update(|value| *value = !*value); linking.set(false); }
-                            class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800">
+                            class="rounded-full border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800">
                             {move || if creating.get() { "Cancel" } else { "+ New person here" }}
                         </button>
                         <button type="button" on:click=move |_| { linking.update(|value| *value = !*value); creating.set(false); }
-                            class="rounded-lg bg-primary-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-600">
+                            class="rounded-full bg-primary-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-600">
                             {move || if linking.get() { "Cancel" } else { "File existing person" }}
                         </button>
                     </div> }.into_any()
@@ -722,7 +722,7 @@ fn OrganizationPeoplePanel(
                                         <p class="text-xs text-slate-500">{if moving { format!("Currently filed under {}", person.organization_name) } else { "No current organization".to_string() }}</p>
                                     </div>
                                     <button type="button" on:click=link prop:disabled=move || busy.get()
-                                        class="rounded-lg border border-primary-500/40 px-3 py-1.5 text-xs font-medium text-primary-200 hover:bg-primary-500/10 disabled:opacity-50">
+                                        class="rounded-full border border-primary-500/40 px-3 py-1.5 text-xs font-medium text-primary-200 hover:bg-primary-500/10 disabled:opacity-50">
                                         {if moving { "Move here" } else { "File here" }}
                                     </button>
                                 </div>
@@ -739,7 +739,7 @@ fn OrganizationPeoplePanel(
                 <span>"Showing " {move || contacts.get().len()} " of " {move || total.get()} " people"</span>
                 <Show when=move || (contacts.get().len() as i64) < total.get()>
                     <button type="button" on:click=move |_| window.update(|value| *value += 50)
-                        class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-800">
+                        class="rounded-full border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-800">
                         "Load more people"
                     </button>
                 </Show>
@@ -880,7 +880,7 @@ fn OrganizationForm(
                 type="button"
                 on:click=submit
                 prop:disabled=move || busy.get()
-                class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
+                class="rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
             >
                 {move || {
                     if busy.get() {

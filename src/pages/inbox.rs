@@ -51,7 +51,7 @@ pub fn InboxPage() -> impl IntoView {
     let draft = RwSignal::new(String::new());
     let busy = RwSignal::new(false);
 
-    let input_class = "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40";
+    let input_class = "w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40";
 
     // (Re)load the window whenever the debounced search or window size changes
     Effect::new(move |_| {
@@ -256,7 +256,7 @@ pub fn InboxPage() -> impl IntoView {
                         <button
                             on:click=move |_| window.update(|w| *w += PAGE)
                             prop:disabled=move || loading.get()
-                            class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
+                            class="rounded-full border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
                         >
                             {move || if loading.get() { "Loading\u{2026}" } else { "Load more" }}
                         </button>
@@ -325,7 +325,7 @@ pub fn InboxPage() -> impl IntoView {
                         <Show when=move || viewing.get()>
                             <button
                                 on:click=move |_| viewing.set(false)
-                                class="mb-4 inline-flex items-center gap-1.5 rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800 lg:hidden"
+                                class="mb-4 inline-flex items-center gap-1.5 rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800 lg:hidden"
                             >
                                 "\u{2190} Back to chats"
                             </button>
@@ -626,7 +626,7 @@ fn ChannelNav(
                         editing.set(true);
                         error.set(String::new());
                     }
-                    class="mt-1 rounded-lg px-2 py-1 text-xs font-medium text-slate-500 hover:bg-slate-800 hover:text-slate-300"
+                    class="mt-1 rounded-full px-2 py-1 text-xs font-medium text-slate-500 hover:bg-slate-800 hover:text-slate-300"
                 >
                     "Edit channels"
                 </button>
@@ -637,7 +637,7 @@ fn ChannelNav(
             <div class="mt-1 space-y-2">
                 <div class="flex gap-1">
                     <input
-                        class="min-w-0 flex-1 rounded-lg border border-slate-700 bg-slate-950 px-2 py-1 text-xs text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none"
+                        class="min-w-0 flex-1 rounded-xl border border-slate-700 bg-slate-900 px-2 py-1 text-xs text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none"
                         placeholder="New channel name"
                         prop:value=move || draft.get()
                         prop:disabled=move || busy.get()
@@ -652,7 +652,7 @@ fn ChannelNav(
                     <button
                         on:click=move |_| commit_draft()
                         prop:disabled=move || busy.get() || draft.get().trim().is_empty()
-                        class="shrink-0 rounded-lg border border-dashed border-slate-600 px-2 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
+                        class="shrink-0 rounded-full border border-dashed border-slate-600 px-2 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
                     >
                         "+ Add"
                     </button>
@@ -661,14 +661,14 @@ fn ChannelNav(
                     <button
                         on:click=save
                         prop:disabled=move || busy.get()
-                        class="rounded-lg bg-primary-500 px-2.5 py-1 text-xs font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
+                        class="rounded-full bg-primary-500 px-2.5 py-1 text-xs font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
                     >
                         {move || if busy.get() { "Saving\u{2026}" } else { "Save" }}
                     </button>
                     <button
                         on:click=cancel
                         prop:disabled=move || busy.get()
-                        class="rounded-lg border border-slate-700 px-2.5 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
+                        class="rounded-full border border-slate-700 px-2.5 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
                     >
                         "Cancel"
                     </button>
@@ -707,7 +707,7 @@ fn CaseChat(
     active: RwSignal<Option<String>>,
     loading_channels: RwSignal<bool>,
 ) -> impl IntoView {
-    let input_class = "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40";
+    let input_class = "w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40";
 
     let active_channel = move || {
         let id = active.get()?;
@@ -760,7 +760,7 @@ fn CaseChat(
     };
 
     view! {
-        <div class="flex h-[70dvh] flex-col rounded-xl border border-slate-800 bg-slate-900 lg:h-[calc(100dvh-12rem)]">
+        <div class="flex h-[70dvh] flex-col rounded-card border border-slate-800 bg-slate-900 shadow-card lg:h-[calc(100dvh-12rem)]">
             <div class="border-b border-slate-800 p-4">
                 <h2 class="truncate text-lg font-semibold">{case_name}</h2>
                 <p class="mt-0.5 truncate text-sm text-slate-500">{subtitle}</p>
@@ -893,7 +893,7 @@ fn ChannelThread(
                 view! {
                     <button
                         on:click=move |_| limit.update(|l| *l += MSG_PAGE)
-                        class="mx-auto block rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800"
+                        class="mx-auto block rounded-full border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800"
                     >
                         "Load earlier messages (" {shown} " of " {move || total.get()} ")"
                     </button>
@@ -925,7 +925,7 @@ fn ChannelThread(
                     let bubble = if mine {
                         "max-w-[80%] rounded-2xl bg-primary-500/20 px-4 py-2 text-sm text-slate-100"
                     } else {
-                        "max-w-[80%] rounded-2xl bg-slate-800 px-4 py-2 text-sm text-slate-100"
+                        "max-w-[80%] rounded-2xl border border-slate-800 bg-slate-900 px-4 py-2 text-sm text-slate-100"
                     };
                     view! {
                         <div class=row>
@@ -1011,7 +1011,7 @@ fn ChannelThread(
                                 <button
                                     on:click=send
                                     prop:disabled=move || sending.get() || body.get().trim().is_empty()
-                                    class="shrink-0 rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
+                                    class="shrink-0 rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
                                 >
                                     {move || if sending.get() { "Sending…" } else { "Send" }}
                                 </button>
@@ -1030,7 +1030,7 @@ fn ChannelThread(
                                 />
                                 <button
                                     disabled=true
-                                    class="shrink-0 cursor-not-allowed rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white opacity-50"
+                                    class="shrink-0 cursor-not-allowed rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white opacity-50"
                                 >
                                     "Send"
                                 </button>

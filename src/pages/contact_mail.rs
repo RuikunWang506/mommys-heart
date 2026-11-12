@@ -20,9 +20,9 @@ use crate::server_fns::organizations::{list_organizations, OrganizationFilters};
 use crate::server_fns::property_filters::{PropertyFacetScope, PropertyFilter, PropertySubject};
 use crate::state::AppState;
 
-const INPUT: &str = "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40 disabled:cursor-not-allowed disabled:opacity-50";
+const INPUT: &str = "w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40 disabled:cursor-not-allowed disabled:opacity-50";
 const LABEL: &str = "mb-1 block text-xs font-medium text-slate-400";
-const PANEL: &str = "rounded-xl border border-slate-800 bg-slate-900 p-5";
+const PANEL: &str = "rounded-card border border-slate-800 bg-slate-900 shadow-card p-5";
 
 #[component]
 pub fn ContactMailPage() -> impl IntoView {
@@ -418,7 +418,7 @@ fn ContactMailWorkspace() -> impl IntoView {
                         "Archived contacts, do-not-contact entries, invalid addresses, and duplicate addresses are excluded."
                     </p>
                 </div>
-                <A href="/contacts" attr:class="rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-300 hover:bg-slate-800">
+                <A href="/contacts" attr:class="rounded-full border border-slate-700 px-3 py-2 text-sm text-slate-300 hover:bg-slate-800">
                     "Back to Contacts"
                 </A>
             </div>
@@ -497,7 +497,7 @@ fn ContactMailWorkspace() -> impl IntoView {
                         </div>
                     </details>
                     <button type="button" on:click=apply_filters
-                        class="mt-3 rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50">
+                        class="mt-3 rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50">
                         "Apply filters"
                     </button>
 
@@ -551,12 +551,12 @@ fn ContactMailWorkspace() -> impl IntoView {
                     <div class="mt-3 flex justify-between gap-3">
                         <button type="button" on:click=move |_| offset.update(|value| *value = (*value - 50).max(0))
                             prop:disabled=move || offset.get() == 0
-                            class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-300 disabled:opacity-40">"Previous"</button>
+                            class="rounded-full border border-slate-700 px-3 py-1.5 text-sm text-slate-300 disabled:opacity-40">"Previous"</button>
                         <button type="button" on:click=move |_| offset.update(|value| *value += 50)
                             prop:disabled=move || {
                                 offset.get() + candidates.get().len() as i64 >= total.get()
                             }
-                            class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-300 disabled:opacity-40">"Next"</button>
+                            class="rounded-full border border-slate-700 px-3 py-1.5 text-sm text-slate-300 disabled:opacity-40">"Next"</button>
                     </div>
                 </section>
 
@@ -616,7 +616,7 @@ fn ContactMailWorkspace() -> impl IntoView {
                     </p>
                     <button type="button" on:click=launch
                         prop:disabled=move || busy.get() || selected_count.get() == 0 || subject.get().trim().is_empty() || body.get().trim().is_empty()
-                        class="mt-4 rounded-lg bg-primary-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50">
+                        class="mt-4 rounded-full bg-primary-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50">
                         {move || if busy.get() { "Starting…" } else { "Start mail task" }}
                     </button>
                 </section>
@@ -682,7 +682,7 @@ fn TaskProgress(
                     </div>
                     <Show when=move || status.is_active()>
                         <button type="button" on:click=move |_| cancel.run(()) prop:disabled=move || busy.get() || status == crate::server_fns::contact_mail::ContactMailTaskStatus::Cancelling
-                            class="rounded-lg border border-rose-500/50 px-3 py-2 text-sm font-medium text-rose-300 hover:bg-rose-500/10 disabled:opacity-50">
+                            class="rounded-full border border-rose-500/50 px-3 py-2 text-sm font-medium text-rose-300 hover:bg-rose-500/10 disabled:opacity-50">
                             {if status == crate::server_fns::contact_mail::ContactMailTaskStatus::Cancelling { "Cancelling…" } else { "Cancel task" }}
                         </button>
                     </Show>

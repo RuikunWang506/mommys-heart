@@ -14,9 +14,9 @@ use crate::helpers::volunteer_details::{
 use crate::server_fns::err_text;
 use crate::server_fns::volunteers::{reveal_volunteer_ssn, save_my_volunteer_details};
 
-const INPUT_CLASS: &str = "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40";
+const INPUT_CLASS: &str = "w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40";
 const LABEL_CLASS: &str = "text-xs font-medium text-slate-400";
-const SECTION_CLASS: &str = "rounded-xl border border-slate-800 bg-slate-900 p-4";
+const SECTION_CLASS: &str = "rounded-card border border-slate-800 bg-slate-900 shadow-card p-4";
 
 /// One read-only "label + value" row, with a muted placeholder when the field
 /// has not been filled in.
@@ -143,7 +143,7 @@ pub fn VolunteerDetailsPanel(
                             <button
                                 on:click=reveal
                                 prop:disabled=move || revealing.get()
-                                class="rounded-lg border border-slate-700 px-2 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
+                                class="rounded-full border border-slate-700 px-2 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
                             >
                                 {move || if revealing.get() { "Revealing\u{2026}" } else { "Reveal" }}
                             </button>
@@ -365,7 +365,7 @@ pub fn VolunteerDetailsPanel(
                 <Show when=move || is_self && !editing.get()>
                     <button
                         on:click=begin_edit
-                        class="shrink-0 rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
+                        class="shrink-0 rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
                     >
                         "Edit"
                     </button>
@@ -375,13 +375,13 @@ pub fn VolunteerDetailsPanel(
                         <button
                             on:click=save
                             prop:disabled=move || saving.get()
-                            class="shrink-0 rounded-lg bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-60"
+                            class="shrink-0 rounded-full bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-60"
                         >
                             {move || if saving.get() { "Saving\u{2026}" } else { "Save" }}
                         </button>
                         <button
                             on:click=cancel_edit
-                            class="shrink-0 rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800"
+                            class="shrink-0 rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800"
                         >
                             "Cancel"
                         </button>

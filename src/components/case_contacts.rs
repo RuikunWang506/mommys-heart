@@ -16,9 +16,9 @@ use crate::server_fns::contacts::{search_active_contacts, ActiveContactSummary};
 use crate::server_fns::err_text;
 use crate::state::AppState;
 
-pub(crate) const PANEL: &str = "rounded-xl border border-slate-800 bg-slate-900 p-5";
+pub(crate) const PANEL: &str = "rounded-card border border-slate-800 bg-slate-900 shadow-card p-5";
 pub(crate) const INPUT: &str =
-    "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:border-primary-500 focus:outline-none";
+    "w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:border-primary-500 focus:outline-none";
 pub(crate) const LABEL: &str = "text-xs font-medium text-slate-400";
 
 #[component]
@@ -220,7 +220,7 @@ fn CaseContactRow(
                             type="button"
                             on:click=begin_edit
                             attr:aria-label=move || edit_label.get_value()
-                            class="rounded-lg border border-slate-700 px-2 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800"
+                            class="rounded-full border border-slate-700 px-2 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800"
                         >
                             "Edit"
                         </button>
@@ -229,7 +229,7 @@ fn CaseContactRow(
                             on:click=remove.clone()
                             prop:disabled=move || busy.get()
                             attr:aria-label=move || remove_label.get_value()
-                            class="rounded-lg border border-slate-700 px-2 py-1 text-xs font-medium text-slate-400 hover:bg-slate-800 disabled:opacity-50"
+                            class="rounded-full border border-slate-700 px-2 py-1 text-xs font-medium text-slate-400 hover:bg-slate-800 disabled:opacity-50"
                         >
                             "Remove"
                         </button>
@@ -251,7 +251,7 @@ fn CaseContactRow(
                             type="button"
                             on:click=save
                             prop:disabled=move || busy.get()
-                            class="rounded-lg bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
+                            class="rounded-full bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
                         >
                             {move || if busy.get() { "Saving…" } else { "Save changes" }}
                         </button>
@@ -259,7 +259,7 @@ fn CaseContactRow(
                             type="button"
                             on:click=cancel
                             prop:disabled=move || busy.get()
-                            class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
+                            class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
                         >
                             "Cancel"
                         </button>
@@ -268,7 +268,7 @@ fn CaseContactRow(
                             on:click=remove
                             prop:disabled=move || busy.get()
                             attr:aria-label=move || remove_label.get_value()
-                            class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-400 hover:bg-slate-800 disabled:opacity-50"
+                            class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-400 hover:bg-slate-800 disabled:opacity-50"
                         >
                             "Remove"
                         </button>
@@ -433,7 +433,7 @@ pub fn CaseContactsPanel(case_id: String, can_edit: bool) -> impl IntoView {
                 <div
                     id=results_id.get_value()
                     role="listbox"
-                    class="absolute z-10 mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-500"
+                    class="absolute z-10 mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-500"
                 >
                     "Type a name or organization to search active people."
                 </div>
@@ -445,7 +445,7 @@ pub fn CaseContactsPanel(case_id: String, can_edit: bool) -> impl IntoView {
                 <div
                     id=results_id.get_value()
                     role="listbox"
-                    class="absolute z-10 mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-500"
+                    class="absolute z-10 mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-500"
                 >
                     "Searching…"
                 </div>
@@ -458,7 +458,7 @@ pub fn CaseContactsPanel(case_id: String, can_edit: bool) -> impl IntoView {
                 <div
                     id=results_id.get_value()
                     role="listbox"
-                    class="absolute z-10 mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-500"
+                    class="absolute z-10 mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-500"
                 >
                     "No matching people."
                 </div>
@@ -501,7 +501,7 @@ pub fn CaseContactsPanel(case_id: String, can_edit: bool) -> impl IntoView {
             <div
                 id=results_id.get_value()
                 role="listbox"
-                class="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-slate-700 bg-slate-950"
+                class="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-slate-700 bg-slate-900"
             >
                 {rows}
             </div>
@@ -541,8 +541,8 @@ pub fn CaseContactsPanel(case_id: String, can_edit: bool) -> impl IntoView {
         let generation = debounce_generation.get_untracked();
         set_timeout(
             move || {
-                if debounce_generation.get_untracked() == generation {
-                    debounced_search_query.set(value);
+                if debounce_generation.try_get_untracked() == Some(generation) {
+                    let _ = debounced_search_query.try_set(value);
                 }
             },
             std::time::Duration::from_millis(300),
@@ -567,7 +567,7 @@ pub fn CaseContactsPanel(case_id: String, can_edit: bool) -> impl IntoView {
                         on:click=toggle_adding
                         aria-expanded=move || adding.get().to_string()
                         aria-controls=add_region_id.get_value()
-                        class="shrink-0 rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600"
+                        class="shrink-0 rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600"
                     >
                         {move || if adding.get() { "Cancel" } else { "+ Add person" }}
                     </button>
@@ -663,7 +663,7 @@ pub fn CaseContactsPanel(case_id: String, can_edit: bool) -> impl IntoView {
                         type="button"
                         on:click=submit
                         prop:disabled=move || busy.get() || selected_contact_id.get().is_empty()
-                        class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
+                        class="rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
                     >
                         {move || if busy.get() { "Adding…" } else { "Add to case" }}
                     </button>

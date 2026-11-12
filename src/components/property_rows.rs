@@ -15,7 +15,7 @@ use crate::helpers::sections;
 use crate::server_fns::contact_properties::ContactProperty;
 use crate::server_fns::contact_rules::RuleField;
 
-const INPUT: &str = "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:border-primary-500 focus:outline-none";
+const INPUT: &str = "w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:border-primary-500 focus:outline-none";
 
 /// One row being edited. `id` distinguishes rows within the editor so adding or
 /// removing one never reorders the others.
@@ -226,7 +226,7 @@ pub fn PropertyRowsEditor(rows: RwSignal<Vec<PropertyRow>>, next_id: RwSignal<us
                                                 <button
                                                     type="button"
                                                     on:click=move |_| rows.update(|list| list.retain(|row| row.id != row_id))
-                                                    class="rounded-lg border border-slate-700 px-3 py-2 text-xs font-medium text-slate-400 hover:bg-slate-800"
+                                                    class="rounded-full border border-slate-700 px-3 py-2 text-xs font-medium text-slate-400 hover:bg-slate-800"
                                                 >
                                                     "Remove"
                                                 </button>
@@ -243,7 +243,7 @@ pub fn PropertyRowsEditor(rows: RwSignal<Vec<PropertyRow>>, next_id: RwSignal<us
             <button
                 type="button"
                 on:click=add_row
-                class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800"
+                class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800"
             >
                 "+ Add property"
             </button>
