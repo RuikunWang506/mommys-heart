@@ -22,9 +22,9 @@ use crate::server_fns::err_text;
 use crate::server_fns::organizations::{list_organizations, OrganizationFilters};
 use crate::state::AppState;
 
-const PANEL: &str = "rounded-xl border border-slate-800 bg-slate-900 p-5";
+const PANEL: &str = "rounded-card border border-slate-800 bg-slate-900 shadow-card p-5";
 const INPUT: &str =
-    "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:border-primary-500 focus:outline-none";
+    "w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:border-primary-500 focus:outline-none";
 
 #[component]
 pub fn ContactDetail(contact_id: String) -> impl IntoView {
@@ -120,14 +120,14 @@ pub fn ContactDetail(contact_id: String) -> impl IntoView {
                                     <button
                                         type="button"
                                         on:click=move |_| editing.update(|e| *e = !*e)
-                                        class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
+                                        class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
                                     >
                                         {move || if editing.get() { "Cancel" } else { "Edit" }}
                                     </button>
                                     <button
                                         type="button"
                                         on:click=toggle_archive
-                                        class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800"
+                                        class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800"
                                     >
                                         {if archived { "Restore" } else { "Archive" }}
                                     </button>
@@ -267,7 +267,7 @@ fn AccountLink(contact: Contact, can_manage: bool, on_changed: Callback<()>) -> 
                         type="button"
                         prop:disabled=move || busy.get()
                         on:click=move |_| apply(None)
-                        class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
+                        class="rounded-full border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
                     >
                         "Unlink"
                     </button>
@@ -319,7 +319,7 @@ fn AccountLink(contact: Contact, can_manage: bool, on_changed: Callback<()>) -> 
                             <button
                                 type="button"
                                 on:click=move |_| picking.set(true)
-                                class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
+                                class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
                             >
                                 "Link an existing account"
                             </button>
@@ -351,14 +351,14 @@ fn AccountLink(contact: Contact, can_manage: bool, on_changed: Callback<()>) -> 
                                         apply(Some(id));
                                     }
                                 }
-                                class="rounded-lg bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
+                                class="rounded-full bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
                             >
                                 "Link"
                             </button>
                             <button
                                 type="button"
                                 on:click=move |_| picking.set(false)
-                                class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800"
+                                class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800"
                             >
                                 "Cancel"
                             </button>

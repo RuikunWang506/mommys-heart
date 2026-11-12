@@ -6,6 +6,21 @@ pub fn badge_pill(colors: &str) -> String {
     format!("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {colors}")
 }
 
+/// Up to two initials for an avatar, or "?" when there is no name to take them from.
+pub fn initials(name: &str) -> String {
+    let found: String = name
+        .split_whitespace()
+        .filter_map(|part| part.chars().next())
+        .take(2)
+        .flat_map(|c| c.to_uppercase())
+        .collect();
+    if found.is_empty() {
+        "?".to_string()
+    } else {
+        found
+    }
+}
+
 /// Percent-encode a document path for a query string. Paths carry user-supplied
 /// folder and file names, so everything outside the unreserved set is escaped
 /// rather than trusted to be URL-safe — `/` included, since it is a separator

@@ -11,9 +11,9 @@ use crate::server_fns::organization_properties::{
 };
 use crate::state::AppState;
 
-const PANEL: &str = "rounded-xl border border-slate-800 bg-slate-900 p-5";
+const PANEL: &str = "rounded-card border border-slate-800 bg-slate-900 shadow-card p-5";
 const INPUT: &str =
-    "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:border-primary-500 focus:outline-none";
+    "w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:border-primary-500 focus:outline-none";
 
 #[derive(Clone)]
 struct Row {
@@ -235,7 +235,7 @@ pub fn OrganizationPropertiesPanel(organization_id: String) -> impl IntoView {
                                 <button
                                     type="button"
                                     on:click=move |_| rows.update(|list| list.retain(|row| row.id != row_id))
-                                    class="rounded-lg border border-slate-700 px-3 py-2 text-xs font-medium text-slate-400 hover:bg-slate-800"
+                                    class="rounded-full border border-slate-700 px-3 py-2 text-xs font-medium text-slate-400 hover:bg-slate-800"
                                 >
                                     "Remove"
                                 </button>
@@ -246,7 +246,7 @@ pub fn OrganizationPropertiesPanel(organization_id: String) -> impl IntoView {
                 <button
                     type="button"
                     on:click=add_row
-                    class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800"
+                    class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800"
                 >
                     "+ Add property"
                 </button>
@@ -276,7 +276,7 @@ pub fn OrganizationPropertiesPanel(organization_id: String) -> impl IntoView {
                                         type="button"
                                         on:click=add_defaults
                                         prop:disabled=move || adding_defaults.get() || loading.get()
-                                        class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
+                                        class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
                                     >
                                         {move || if adding_defaults.get() {
                                             "Adding defaults…"
@@ -288,7 +288,7 @@ pub fn OrganizationPropertiesPanel(organization_id: String) -> impl IntoView {
                                         type="button"
                                         on:click=begin_edit
                                         prop:disabled=move || loading.get() || adding_defaults.get()
-                                        class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800 disabled:opacity-50"
+                                        class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800 disabled:opacity-50"
                                     >
                                         "Edit"
                                     </button>
@@ -301,14 +301,14 @@ pub fn OrganizationPropertiesPanel(organization_id: String) -> impl IntoView {
                             type="button"
                             on:click=save
                             prop:disabled=move || saving.get()
-                            class="rounded-lg bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
+                            class="rounded-full bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
                         >
                             {move || if saving.get() { "Saving…" } else { "Save" }}
                         </button>
                         <button
                             type="button"
                             on:click=move |_| editing.set(false)
-                            class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800"
+                            class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800"
                         >
                             "Cancel"
                         </button>

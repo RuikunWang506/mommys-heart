@@ -11,10 +11,31 @@
 
     - primary  -> yellow / gold (the main accent)
     - rose     -> red           (danger / secondary accent)
-    - slate    -> a light surface + dark text ramp (inverted for light mode)
+    - slate    -> a warm light surface + dark text ramp (inverted for light mode)
     - the "-300" status text shades are darkened so badges stay readable on white
 */
+
+/* Self-hosted: the CSP only allows same-origin fonts. */
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  src: url("/fonts/atkinson-hyperlegible-next.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Lora";
+  src: url("/fonts/lora.woff2") format("woff2");
+  font-weight: 500 700;
+  font-display: swap;
+}
+
 @theme {
+  --font-sans: "Atkinson Hyperlegible Next", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Lora", Georgia, "Times New Roman", serif;
+  --radius-card: 20px;
+  --shadow-card: 0 1px 2px rgba(80, 60, 30, 0.04), 0 6px 18px rgba(80, 60, 30, 0.05);
+
   /* Primary accent: warm yellow / gold. */
   --color-primary-50: #fffbeb;
   --color-primary-100: #fef3c7;
@@ -50,17 +71,17 @@
 
   /* Slate ramp, remapped for light mode: low numbers = dark text, high
      numbers = light surfaces (900 = card white, 950 = page). */
-  --color-slate-50: #020617;
-  --color-slate-100: #0f172a;
-  --color-slate-200: #1e293b;
-  --color-slate-300: #334155;
-  --color-slate-400: #475569;
-  --color-slate-500: #64748b;
-  --color-slate-600: #94a3b8;
-  --color-slate-700: #cbd5e1;
-  --color-slate-800: #e2e8f0;
+  --color-slate-50: #1c1814;
+  --color-slate-100: #231f1b;
+  --color-slate-200: #2b2622;
+  --color-slate-300: #4a423b;
+  --color-slate-400: #5b4f43;
+  --color-slate-500: #6b6157;
+  --color-slate-600: #776b5f;
+  --color-slate-700: #e4d8c6;
+  --color-slate-800: #efe6d8;
   --color-slate-900: #ffffff;
-  --color-slate-950: #f8fafc;
+  --color-slate-950: #f6f7f9;
 }
 
 /* Light theme base: keep the whole viewport light, even outside components. */
@@ -70,10 +91,21 @@
   }
 
   body {
-    background-color: #f8fafc;
+    background-color: #f6f7f9;
     /* light page */
-    color: #1e293b;
-    /* dark slate text */
+    color: #2b2622;
+    /* warm dark text */
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-serif);
+  }
+
+  /* Some headings wrap a disclosure button; keep controls in the body font. */
+  :is(h1, h2, h3) :is(button, a) {
+    font-family: var(--font-sans);
   }
 
   /*

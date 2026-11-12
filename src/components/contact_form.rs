@@ -11,7 +11,7 @@ use crate::server_fns::err_text;
 use crate::server_fns::organizations::{search_active_organizations, ActiveOrganizationSummary};
 
 const INPUT: &str =
-    "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:border-primary-500 focus:outline-none";
+    "w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:border-primary-500 focus:outline-none";
 const LABEL: &str = "text-xs font-medium text-slate-400";
 
 /// The fixed broad roles shared by every contact create and edit workflow.
@@ -229,7 +229,7 @@ pub fn ContactForm(
                     />
                 </label>
                 <Show when=move || organization_picker_open.get()>
-                    <div role="listbox" class="absolute z-10 mt-1 max-h-52 w-full overflow-y-auto rounded-lg border border-slate-700 bg-slate-950">
+                    <div role="listbox" class="absolute z-10 mt-1 max-h-52 w-full overflow-y-auto rounded-xl border border-slate-700 bg-slate-900">
                         <button
                             type="button"
                             class="block w-full px-3 py-2 text-left text-sm text-slate-400 hover:bg-slate-800"
@@ -314,7 +314,7 @@ pub fn ContactForm(
                 type="button"
                 on:click=submit
                 prop:disabled=move || busy.get()
-                class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
+                class="rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
             >
                 {move || {
                     if busy.get() {

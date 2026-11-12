@@ -118,7 +118,7 @@ fn CaseRequestCard(case: CaseSummary, reload: RwSignal<u32>) -> impl IntoView {
     };
 
     view! {
-        <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
+        <div class="rounded-card border border-slate-800 bg-slate-900 shadow-card p-4">
             <div class="flex flex-wrap items-center justify-between gap-2">
                 <span class="min-w-0 truncate font-medium text-slate-100">{case.name.clone()}</span>
                 <span class=format!(
@@ -138,21 +138,21 @@ fn CaseRequestCard(case: CaseSummary, reload: RwSignal<u32>) -> impl IntoView {
                 <div class="mt-3 flex flex-wrap items-center gap-2">
                     <A
                         href=detail_href.clone()
-                        attr:class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800"
+                        attr:class="rounded-full border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800"
                     >
                         "View details"
                     </A>
                     <button
                         on:click=accept
                         prop:disabled=move || saving.get()
-                        class="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
+                        class="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
                     >
                         "Accept"
                     </button>
                     <button
                         on:click=move |_| declining.set(true)
                         prop:disabled=move || saving.get()
-                        class="rounded-lg border border-rose-500/40 px-3 py-1.5 text-xs font-semibold text-rose-300 hover:bg-rose-500/10 disabled:opacity-50"
+                        class="rounded-full border border-rose-500/40 px-3 py-1.5 text-xs font-semibold text-rose-300 hover:bg-rose-500/10 disabled:opacity-50"
                     >
                         "Decline"
                     </button>
@@ -167,7 +167,7 @@ fn CaseRequestCard(case: CaseSummary, reload: RwSignal<u32>) -> impl IntoView {
                     <textarea
                         id=decline_reason_id.clone()
                         rows="2"
-                        class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none"
+                        class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none"
                         placeholder="e.g. Outside our service area; referred to Lakeside Legal Aid."
                         prop:disabled=move || saving.get()
                         prop:value=move || reason.get()
@@ -177,7 +177,7 @@ fn CaseRequestCard(case: CaseSummary, reload: RwSignal<u32>) -> impl IntoView {
                         <button
                             on:click=confirm_decline
                             prop:disabled=move || saving.get()
-                            class="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-500 disabled:opacity-50"
+                            class="rounded-full bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-500 disabled:opacity-50"
                         >
                             {move || if saving.get() { "Saving\u{2026}" } else { "Confirm decline" }}
                         </button>
@@ -186,7 +186,7 @@ fn CaseRequestCard(case: CaseSummary, reload: RwSignal<u32>) -> impl IntoView {
                                 declining.set(false);
                                 error.set(None);
                             }
-                            class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800"
+                            class="rounded-full border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800"
                         >
                             "Cancel"
                         </button>

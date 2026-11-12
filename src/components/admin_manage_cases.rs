@@ -7,6 +7,7 @@ use leptos_router::hooks::use_query_map;
 
 use crate::components::admin_cases::CaseRequests;
 use crate::components::admin_requests::AdminRequestCenter;
+use crate::components::case_tabs::CaseTab;
 use crate::components::loading::Loading;
 use crate::pages::cases::CaseDetail;
 use crate::server_fns::admin_requests::AdminRequestKind;
@@ -136,6 +137,7 @@ pub fn ManageCases(
     let detail_loading = RwSignal::new(selected_case_id.get_value().is_some());
     let detail_error = RwSignal::new(None::<String>);
     let open_folder = RwSignal::new(String::new());
+    let tab = RwSignal::new(CaseTab::Overview);
     let detail_generation = RwSignal::new(0u64);
 
     Effect::new(move |_| {
@@ -200,7 +202,7 @@ pub fn ManageCases(
             return view! {
                 <div class="space-y-4">
                     <BackToCases href=back_href.get_value() />
-                    <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
+                    <div class="rounded-card border border-slate-800 bg-slate-900 shadow-card p-4">
                         <Loading label="Loading case details…" />
                     </div>
                 </div>
@@ -214,14 +216,14 @@ pub fn ManageCases(
                 view! {
                     <div class="space-y-4">
                         <BackToCases href=back_href.get_value() />
-                        <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
+                        <div class="rounded-card border border-slate-800 bg-slate-900 shadow-card p-4">
                             <h2 class="text-lg font-semibold text-slate-100">{summary.name.clone()}</h2>
                             <p class="mt-2 text-sm text-slate-400">
                                 "You do not have access to this case. An operations admin can give themselves access from the user directory."
                             </p>
                             <A
                                 href=access_href.get_value()
-                                attr:class="mt-3 inline-flex items-center rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
+                                attr:class="mt-3 inline-flex items-center rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
                             >
                                 "Manage my case access"
                             </A>
@@ -237,6 +239,7 @@ pub fn ManageCases(
                         summary=summary
                         reload=reload
                         open_folder=open_folder
+                        tab=tab
                     />
                 </div>
             }
@@ -279,7 +282,7 @@ pub fn ManageCases(
                 let (access_text, access_classes) = access_label(&case.capabilities);
                 let href = format!("/admin/cases/{id}{}", query_suffix.get());
                 view! {
-                    <article class="rounded-xl border border-slate-800 bg-slate-900 p-4">
+                    <article class="rounded-card border border-slate-800 bg-slate-900 shadow-card p-4">
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                             <div class="min-w-0">
                                 <div class="flex flex-wrap items-center gap-2">
@@ -302,7 +305,7 @@ pub fn ManageCases(
                             </div>
                             <A
                                 href=href
-                                attr:class="shrink-0 rounded-lg border border-slate-700 px-3 py-1.5 text-center text-sm font-medium text-slate-200 hover:bg-slate-800"
+                                attr:class="shrink-0 rounded-full border border-slate-700 px-3 py-1.5 text-center text-sm font-medium text-slate-200 hover:bg-slate-800"
                             >
                                 "View details"
                             </A>
@@ -330,7 +333,7 @@ pub fn ManageCases(
                             window.update(|value| *value = (*value + PAGE_SIZE).min(MAX_WINDOW))
                         }
                         prop:disabled=move || loading.get()
-                        class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800 disabled:opacity-50"
+                        class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800 disabled:opacity-50"
                     >
                         {move || if loading.get() { "Loading…" } else { "Load more" }}
                     </button>
@@ -387,7 +390,7 @@ pub fn ManageCases(
                     <input
                         id="admin-case-search"
                         type="search"
-                        class="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40"
+                        class="mt-2 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40"
                         placeholder="Case name, ID, or owner name"
                         prop:value=move || query.get()
                         on:input=move |event| {
@@ -410,7 +413,7 @@ fn BackToCases(#[prop(into)] href: String) -> impl IntoView {
     view! {
         <A
             href=href
-            attr:class="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
+            attr:class="inline-flex items-center gap-1.5 rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
         >
             "← Back to cases"
         </A>

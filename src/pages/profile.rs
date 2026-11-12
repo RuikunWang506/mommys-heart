@@ -28,9 +28,9 @@ use crate::server_fns::users::AccountRole;
 use crate::server_fns::volunteers::VolunteerStatus;
 use crate::state::AppState;
 
-const INPUT_CLASS: &str = "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40";
+const INPUT_CLASS: &str = "w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40";
 const LABEL_CLASS: &str = "text-xs font-medium text-slate-400";
-const SECTION_CLASS: &str = "rounded-xl border border-slate-800 bg-slate-900 p-4";
+const SECTION_CLASS: &str = "rounded-card border border-slate-800 bg-slate-900 shadow-card p-4";
 
 /// One read-only "label + value" row, with a muted placeholder when the user
 /// has not filled the field in.
@@ -173,7 +173,7 @@ pub fn ProfilePage() -> impl IntoView {
                 view! {
                     <button
                         on:click=begin_edit
-                        class="shrink-0 rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
+                        class="shrink-0 rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
                     >
                         "Edit profile"
                     </button>
@@ -343,7 +343,7 @@ pub fn ProfilePage() -> impl IntoView {
                     <p class="mt-2 text-sm text-slate-400">{blurb}</p>
                     <A
                         href="/volunteer-agreement"
-                        attr:class="mt-3 inline-block rounded-lg bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-600"
+                        attr:class="mt-3 inline-block rounded-full bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-600"
                     >
                         {cta}
                     </A>
@@ -474,7 +474,7 @@ pub fn ProfilePage() -> impl IntoView {
                             <span class=status_badge>{volunteer.status.label()}</span>
                             <button
                                 on:click=move |_| agreement_open.update(|open| *open = !*open)
-                                class="rounded-lg border border-slate-700 px-2 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800"
+                                class="rounded-full border border-slate-700 px-2 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800"
                             >
                                 {move || if agreement_open.get() { "Hide" } else { "View agreement" }}
                             </button>
@@ -482,7 +482,7 @@ pub fn ProfilePage() -> impl IntoView {
                                 href=pdf_href
                                 download
                                 title="Download volunteer agreement"
-                                class="rounded-lg border border-slate-700 px-2 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800"
+                                class="rounded-full border border-slate-700 px-2 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800"
                             >
                                 "Download PDF"
                             </a>
@@ -559,13 +559,13 @@ pub fn ProfilePage() -> impl IntoView {
                             <button
                                 on:click=save
                                 prop:disabled=move || saving.get()
-                                class="shrink-0 rounded-lg bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-60"
+                                class="shrink-0 rounded-full bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-60"
                             >
                                 {move || if saving.get() { "Saving\u{2026}" } else { "Save" }}
                             </button>
                             <button
                                 on:click=cancel_edit
-                                class="shrink-0 rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800"
+                                class="shrink-0 rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800"
                             >
                                 "Cancel"
                             </button>
@@ -643,7 +643,7 @@ pub fn ProfilePage() -> impl IntoView {
                         <p class="text-sm text-rose-300">{msg}</p>
                         <A
                             href="/cases"
-                            attr:class="mt-3 inline-block rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
+                            attr:class="mt-3 inline-block rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
                         >
                             "Back to cases"
                         </A>

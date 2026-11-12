@@ -23,6 +23,7 @@ pub mod bulk_properties;
 pub mod capabilities;
 pub mod case_contacts;
 pub mod case_notes;
+pub mod case_plan;
 pub mod case_properties;
 pub mod cases;
 pub mod channel_notifications;

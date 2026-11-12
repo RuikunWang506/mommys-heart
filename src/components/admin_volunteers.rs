@@ -121,7 +121,7 @@ pub fn VolunteersTab(
                     <button
                         on:click=move |_| window.update(|w| *w += PAGE_SIZE)
                         prop:disabled=move || loading.get()
-                        class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800 disabled:opacity-50"
+                        class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800 disabled:opacity-50"
                     >
                         {move || if loading.get() { "Loading\u{2026}" } else { "Load more" }}
                     </button>
@@ -149,7 +149,7 @@ pub fn VolunteersTab(
             <input
                 id="admin-volunteer-search"
                 type="search"
-                class="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40"
+                class="mt-2 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40"
                 placeholder="Name or email"
                 prop:value=move || query.get()
                 on:input=move |ev| {
@@ -159,7 +159,7 @@ pub fn VolunteersTab(
                 }
             />
         </div>
-        <div class="rounded-xl border border-slate-800 bg-slate-900">{rows}</div>
+        <div class="rounded-card border border-slate-800 bg-slate-900 shadow-card">{rows}</div>
         {footer}
     }
 }
@@ -293,7 +293,7 @@ pub fn PendingApplications(
         };
 
         view! {
-            <section class="rounded-xl border border-slate-800 bg-slate-900 p-5">
+            <section class="rounded-card border border-slate-800 bg-slate-900 shadow-card p-5">
                 <div class="mb-3 flex items-center gap-2">
                     <h2 class="text-base font-semibold text-slate-100">"Volunteer applications"</h2>
                     <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-primary-500 px-1.5 py-0.5 text-[0.65rem] font-semibold leading-none text-white">
@@ -686,7 +686,7 @@ fn ApplicationCard(
                         </label>
                         <input
                             id=note_id.get_value()
-                            class="min-w-0 w-full rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm text-slate-100 placeholder:text-slate-500"
+                            class="min-w-0 w-full rounded-xl border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-100 placeholder:text-slate-500"
                             placeholder="Optional context included in the email"
                             maxlength="1000"
                             prop:disabled=move || deciding.get()
@@ -725,7 +725,7 @@ fn ApplicationCard(
                                     <input
                                         id=new_email_id.get_value()
                                         type="email"
-                                        class="min-w-0 w-full rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm text-slate-100 placeholder:text-slate-500"
+                                        class="min-w-0 w-full rounded-xl border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-100 placeholder:text-slate-500"
                                         placeholder="name@example.org"
                                         maxlength="254"
                                         autocomplete="off"
@@ -745,7 +745,7 @@ fn ApplicationCard(
                                     <input
                                         id=confirm_email_id.get_value()
                                         type="email"
-                                        class="min-w-0 w-full rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm text-slate-100 placeholder:text-slate-500"
+                                        class="min-w-0 w-full rounded-xl border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-100 placeholder:text-slate-500"
                                         placeholder="Type it again"
                                         maxlength="254"
                                         autocomplete="off"
@@ -763,7 +763,7 @@ fn ApplicationCard(
                             type="button"
                             on:click=move |_| decide(true)
                             prop:disabled=move || deciding.get()
-                            class="rounded-lg bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
+                            class="rounded-full bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
                         >
                             "Approve"
                         </button>
@@ -771,7 +771,7 @@ fn ApplicationCard(
                             type="button"
                             on:click=move |_| decide(false)
                             prop:disabled=move || deciding.get()
-                            class="rounded-lg border border-rose-500/40 px-3 py-1.5 text-sm font-medium text-rose-300 hover:bg-rose-500/10 disabled:opacity-50"
+                            class="rounded-full border border-rose-500/40 px-3 py-1.5 text-sm font-medium text-rose-300 hover:bg-rose-500/10 disabled:opacity-50"
                         >
                             "Deny"
                         </button>

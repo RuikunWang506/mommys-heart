@@ -16,7 +16,7 @@ use crate::server_fns::property_filters::{
     list_property_facets, PropertyFacet, PropertyFacetScope, PropertyFilter, PropertySubject,
 };
 
-const INPUT: &str = "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40";
+const INPUT: &str = "w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40";
 
 /// Which pane of the popover is open.
 #[derive(Clone, PartialEq)]
@@ -290,7 +290,7 @@ pub fn PropertyFilterBar(
                     <button
                         type="button"
                         on:click=move |_| apply(apply_key.clone())
-                        class="rounded-lg bg-primary-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-600"
+                        class="rounded-full bg-primary-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-600"
                     >
                         {move || {
                             let count = draft.get().len();
@@ -321,7 +321,7 @@ pub fn PropertyFilterBar(
                                 pane.set(Pane::Closed);
                             }
                         }
-                        class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800"
+                        class="rounded-full border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800"
                     >
                         "+ Add property filter"
                     </button>

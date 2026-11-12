@@ -27,7 +27,7 @@ use crate::server_fns::property_filters::{
 };
 use crate::state::AppState;
 
-pub(crate) const INPUT: &str = "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40";
+pub(crate) const INPUT: &str = "w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40";
 pub(crate) const LABEL: &str = "mb-1 block text-xs font-medium text-slate-400";
 
 #[derive(Clone, Default)]
@@ -152,7 +152,7 @@ fn DirectoryContactEditor(
     });
 
     view! {
-        <section class="rounded-xl border border-slate-800 bg-slate-900 p-5">
+        <section class="rounded-card border border-slate-800 bg-slate-900 shadow-card p-5">
             <div class="mb-5 flex items-center justify-between gap-3">
                 <h2 class="text-lg font-semibold">
                     {
@@ -300,14 +300,14 @@ fn DirectoryContactEditor(
                     type="button"
                     on:click=move |_| on_save.run(())
                     prop:disabled=move || saving.get()
-                    class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
+                    class="rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
                 >
                     {move || if saving.get() { "Saving\u{2026}".to_string() } else { save_label.clone() }}
                 </button>
                 <button
                     type="button"
                     on:click=move |_| on_cancel.run(())
-                    class="rounded-lg border border-slate-700 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800"
+                    class="rounded-full border border-slate-700 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800"
                 >
                     "Cancel"
                 </button>
@@ -473,7 +473,7 @@ pub(crate) fn ContactOutreachPanel(
     };
 
     view! {
-        <section class="rounded-xl border border-slate-800 bg-slate-900 p-5">
+        <section class="rounded-card border border-slate-800 bg-slate-900 shadow-card p-5">
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <div>
                     <h3 class="text-sm font-semibold text-slate-200">"Categories & communications"</h3>
@@ -499,7 +499,7 @@ pub(crate) fn ContactOutreachPanel(
                                 reset_categories();
                                 editing_categories.set(false);
                             }
-                            class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800"
+                            class="rounded-full border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800"
                         >
                             {move || if editing_contact.get() { "Cancel contact edit" } else { "Edit directory fields" }}
                         </button>
@@ -517,7 +517,7 @@ pub(crate) fn ContactOutreachPanel(
                             reset_contact_draft();
                             editing_contact.set(false);
                         }
-                        class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800"
+                        class="rounded-full border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800"
                     >
                         {move || if editing_categories.get() { "Cancel category edit" } else { "Edit categories" }}
                     </button>
@@ -586,7 +586,7 @@ pub(crate) fn ContactOutreachPanel(
                         type="button"
                         on:click=save_categories
                         prop:disabled=move || busy.get()
-                        class="mt-3 rounded-lg bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
+                        class="mt-3 rounded-full bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
                     >
                         {move || if busy.get() { "Saving…" } else { "Save categories" }}
                     </button>
@@ -617,7 +617,7 @@ pub(crate) fn ContactOutreachPanel(
                     type="button"
                     on:click=add_communication
                     prop:disabled=move || busy.get() || body.get().trim().is_empty()
-                    class="mt-3 rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
+                    class="mt-3 rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
                 >
                     "Add to communication log"
                 </button>
@@ -1038,7 +1038,7 @@ fn ContactsDirectory() -> impl IntoView {
                 view! {
                     <A
                         href=href
-                        attr:class="block rounded-xl border border-slate-800 bg-slate-900 p-4 hover:border-primary-500/40"
+                        attr:class="block rounded-card border border-slate-800 bg-slate-900 shadow-card p-4 hover:border-primary-500/40"
                     >
                         <p class="font-medium text-slate-100">{contact.full_name}</p>
                         <div class="mt-1 flex flex-wrap gap-1">
@@ -1075,7 +1075,7 @@ fn ContactsDirectory() -> impl IntoView {
                     <Show when=move || can_bulk_edit>
                         <A
                             href="/properties/bulk?subject=contact"
-                            attr:class="rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800"
+                            attr:class="rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800"
                         >
                             "Bulk edit properties"
                         </A>
@@ -1083,7 +1083,7 @@ fn ContactsDirectory() -> impl IntoView {
                     <Show when=move || can_import>
                         <A
                             href="/import?subject=contact"
-                            attr:class="rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800"
+                            attr:class="rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800"
                         >
                             "Import from file"
                         </A>
@@ -1091,7 +1091,7 @@ fn ContactsDirectory() -> impl IntoView {
                     <Show when=move || can_manage_taxonomy>
                         <A
                             href="/contacts/categories"
-                            attr:class="rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800"
+                            attr:class="rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800"
                         >
                             "Categories and rules"
                         </A>
@@ -1099,14 +1099,14 @@ fn ContactsDirectory() -> impl IntoView {
                     <Show when=move || can_send_mail>
                         <A
                             href="/contacts/mail"
-                            attr:class="rounded-lg border border-primary-500/50 px-4 py-2 text-sm font-semibold text-primary-300 hover:bg-primary-500/10"
+                            attr:class="rounded-full border border-primary-500/50 px-4 py-2 text-sm font-semibold text-primary-300 hover:bg-primary-500/10"
                         >
                             "Send mail"
                         </A>
                     </Show>
                     <A
                         href="/contacts/new"
-                        attr:class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600"
+                        attr:class="rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600"
                     >
                         "Add contact"
                     </A>
@@ -1183,7 +1183,7 @@ fn ContactsDirectory() -> impl IntoView {
                         />
                         "Include archived"
                     </label>
-                    <div class="rounded-xl border border-slate-800 bg-slate-900">
+                    <div class="rounded-card border border-slate-800 bg-slate-900 shadow-card">
                         <div class="flex items-center justify-between border-b border-slate-800 px-4 py-3">
                             <div>
                                 <h3 class="text-sm font-semibold">"Filter categories"</h3>
@@ -1220,7 +1220,7 @@ fn ContactsDirectory() -> impl IntoView {
                             <button
                                 type="button"
                                 on:click=move |_| offset.set(contacts.get_untracked().len() as i64)
-                                class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
+                                class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
                             >
                                 "Load more"
                             </button>
