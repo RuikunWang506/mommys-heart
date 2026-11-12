@@ -3,13 +3,16 @@ use leptos::task::spawn_local;
 use leptos_router::components::A;
 
 use crate::components::case_contacts::CaseContactsPanel;
+use crate::components::case_plan::CasePlanCard;
 use crate::components::case_questionnaires::intake_status;
+use crate::helpers::format::initials;
 use crate::helpers::visibility::Visibility;
 use crate::server_fns::case_contacts::{list_case_contacts, CaseContact, CaseContactRole};
 use crate::server_fns::case_notes::{
     list_case_notes, CaseNoteListFilters, CaseNoteListItem, CaseNoteState,
 };
 use crate::server_fns::case_properties::CaseProperty;
+use crate::server_fns::err_text;
 use crate::state::AppState;
 
 const CARD: &str =
@@ -23,11 +26,15 @@ const RECENT_LIMIT: usize = 4;
 #[component]
 pub fn CaseOverview(
     case_id: String,
-    properties: Vec<CaseProperty>,
+    properties: Signal<Vec<CaseProperty>>,
     client_first_name: String,
     show_intake: bool,
+    show_case_info: bool,
     show_people: bool,
     can_edit_people: bool,
+    show_plan: bool,
+    can_edit_plan: bool,
+    can_note_plan: bool,
     on_open_intake: Callback<()>,
     on_open_notes: Callback<()>,
 ) -> impl IntoView {
@@ -40,29 +47,64 @@ pub fn CaseOverview(
     );
     let case_sv = StoredValue::new(case_id.clone());
     let notes = RwSignal::new(Vec::<CaseNoteListItem>::new());
+    let drafts = RwSignal::new(Vec::<CaseNoteListItem>::new());
+    let notes_loading = RwSignal::new(true);
+    let notes_error = RwSignal::new(String::new());
     let contacts = RwSignal::new(Vec::<CaseContact>::new());
+    let contacts_error = RwSignal::new(String::new());
     let managing_people = RwSignal::new(false);
 
     {
         let case_id = case_id.clone();
         spawn_local(async move {
-            if let Ok(page) = list_case_notes(case_id, CaseNoteListFilters::default(), 0, 20).await
-            {
-                notes.set(page.items);
+            let recent =
+                list_case_notes(case_id.clone(), CaseNoteListFilters::default(), 0, 20).await;
+            let draft_filter = CaseNoteListFilters {
+                state: Some(CaseNoteState::Draft),
+                ..CaseNoteListFilters::default()
+            };
+            let own_drafts = list_case_notes(case_id, draft_filter, 0, 100).await;
+            let _ = notes_loading.try_set(false);
+            match (recent, own_drafts) {
+                (Ok(recent), Ok(own_drafts)) => {
+                    let _ = notes.try_set(recent.items);
+                    let _ = drafts.try_set(own_drafts.items);
+                }
+                (Err(e), _) | (_, Err(e)) => {
+                    let _ = notes_error.try_set(err_text(e));
+                }
             }
         });
     }
-    if show_people {
-        let case_id = case_id.clone();
+    let load_contacts = move || {
+        let case_id = case_sv.get_value();
         spawn_local(async move {
-            if let Ok(found) = list_case_contacts(case_id).await {
-                contacts.set(found);
+            match list_case_contacts(case_id).await {
+                Ok(found) => {
+                    let _ = contacts.try_set(found);
+                    let _ = contacts_error.try_set(String::new());
+                }
+                Err(e) => {
+                    let _ = contacts_error.try_set(err_text(e));
+                }
             }
+        });
+    };
+    if show_people {
+        load_contacts();
+        // The summary reflects changes made in the full list once it closes.
+        Effect::new(move |was_open: Option<bool>| {
+            let open = managing_people.get();
+            if was_open == Some(true) && !open {
+                load_contacts();
+            }
+            open
         });
     }
 
-    let (intake_active, intake_summary) = intake_status(&properties);
+    let intake = Memo::new(move |_| properties.with(|all| intake_status(all)));
     let intake_item = move || {
+        let (intake_active, intake_summary) = intake.get();
         (show_intake && intake_active > 0).then(|| {
             view! {
                 <li class="flex flex-wrap items-center justify-between gap-3 py-3">
@@ -87,10 +129,10 @@ pub fn CaseOverview(
     };
 
     let draft_items = move || {
-        notes
+        drafts
             .get()
             .into_iter()
-            .filter(|n| n.state == CaseNoteState::Draft && viewer_id.with_value(|v| n.author_user_id == *v))
+            .filter(|n| viewer_id.with_value(|v| n.author_user_id == *v))
             .map(|n| {
                 let href = format!("/cases/{}/notes/{}", case_sv.get_value(), n.id);
                 view! {
@@ -116,15 +158,12 @@ pub fn CaseOverview(
     };
 
     let needs_count = move || {
-        let drafts = notes.with(|all| {
+        let own_drafts = drafts.with(|all| {
             all.iter()
-                .filter(|n| {
-                    n.state == CaseNoteState::Draft
-                        && viewer_id.with_value(|v| n.author_user_id == *v)
-                })
+                .filter(|n| viewer_id.with_value(|v| n.author_user_id == *v))
                 .count()
         });
-        drafts + usize::from(show_intake && intake_active > 0)
+        own_drafts + usize::from(show_intake && intake.with(|(active, _)| *active > 0))
     };
 
     let needs_you = view! {
@@ -140,10 +179,19 @@ pub fn CaseOverview(
             </div>
             <Show
                 when=move || { needs_count() > 0 }
-                fallback=|| view! { <p class="mt-3 text-sm text-slate-500">"Nothing needs you on this case right now."</p> }
+                fallback=move || {
+                    let message = if notes_loading.get() {
+                        "Loading\u{2026}".to_string()
+                    } else if !notes_error.get().is_empty() {
+                        notes_error.get()
+                    } else {
+                        "Nothing needs you on this case right now.".to_string()
+                    };
+                    view! { <p class="mt-3 text-sm text-slate-500">{message}</p> }
+                }
             >
                 <ul class="mt-1 divide-y divide-slate-800">
-                    {intake_item.clone()}
+                    {intake_item}
                     {draft_items}
                 </ul>
             </Show>
@@ -163,6 +211,9 @@ pub fn CaseOverview(
                         <button type="button" on:click=manage class=SMALL_BUTTON>"+ Add"</button>
                     })}
                 </div>
+                <Show when=move || !contacts_error.get().is_empty()>
+                    <p class="mt-3 text-sm text-rose-400">{move || contacts_error.get()}</p>
+                </Show>
                 <ul class="mt-4 space-y-4">
                     {move || {
                         contacts
@@ -183,7 +234,7 @@ pub fn CaseOverview(
                                             <p class="text-sm text-slate-500">{detail}</p>
                                         </div>
                                         {can_edit_people.then(|| view! {
-                                            <button type="button" on:click=manage class=SMALL_BUTTON>"Edit"</button>
+                                            <button type="button" on:click=manage class=SMALL_BUTTON>"Manage"</button>
                                         })}
                                     </li>
                                 }
@@ -204,11 +255,6 @@ pub fn CaseOverview(
         .into_any()
     };
 
-    let (shared, restricted): (Vec<CaseProperty>, Vec<CaseProperty>) = properties
-        .iter()
-        .cloned()
-        .partition(|p| p.visibility == Visibility::Shared);
-    let restricted_sections = section_fill_counts(&restricted);
     let client_label = if client_first_name.is_empty() {
         "The client can see these".to_string()
     } else {
@@ -224,8 +270,10 @@ pub fn CaseOverview(
                 {client_label}
             </p>
             <dl class="mt-2 space-y-2 text-[14.5px]">
-                {shared
+                {move || properties
+                    .get()
                     .into_iter()
+                    .filter(|p| p.visibility == Visibility::Shared)
                     .filter(|p| !p.value.trim().is_empty())
                     .map(|p| view! {
                         <div class="flex justify-between gap-3">
@@ -235,7 +283,16 @@ pub fn CaseOverview(
                     })
                     .collect::<Vec<_>>()}
             </dl>
-            {(!restricted_sections.is_empty()).then(|| {
+            {move || {
+                let restricted_sections = properties.with(|all| {
+                    let restricted: Vec<CaseProperty> = all
+                        .iter()
+                        .filter(|p| p.visibility != Visibility::Shared)
+                        .cloned()
+                        .collect();
+                    section_fill_counts(&restricted)
+                });
+                (!restricted_sections.is_empty()).then(|| {
                 let last = restricted_sections.len() - 1;
                 view! {
                     <div class="mt-4 rounded-[14px] border border-[#fcd34d] bg-[#fffdf5] px-4 py-3.5">
@@ -262,7 +319,8 @@ pub fn CaseOverview(
                         </p>
                     </div>
                 }
-            })}
+                })
+            }}
         </section>
     };
 
@@ -299,7 +357,14 @@ pub fn CaseOverview(
                     })
                     .collect();
                 if items.is_empty() {
-                    view! { <p class="mt-4 text-sm text-slate-500">"No notes on this case yet."</p> }.into_any()
+                    let message = if notes_loading.get() {
+                        "Loading\u{2026}".to_string()
+                    } else if !notes_error.get().is_empty() {
+                        notes_error.get()
+                    } else {
+                        "No notes on this case yet.".to_string()
+                    };
+                    view! { <p class="mt-4 text-sm text-slate-500">{message}</p> }.into_any()
                 } else {
                     view! {
                         <ol class="mt-4 ml-1.5 space-y-3.5 border-l-2 border-slate-800 pl-[18px]">{items}</ol>
@@ -317,13 +382,14 @@ pub fn CaseOverview(
         <div class="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
             <div class="min-w-0 space-y-6">
                 {needs_you}
+                {show_plan.then(|| view! { <CasePlanCard case_id=case_sv.get_value() can_edit=can_edit_plan can_note=can_note_plan /> })}
                 <Show when=move || managing_people.get()>
                     <CaseContactsPanel case_id=case_sv.get_value() can_edit=can_edit_people />
                 </Show>
             </div>
             <aside class="space-y-6" aria-label="Case at a glance">
                 {people_summary}
-                {case_info}
+                {show_case_info.then_some(case_info)}
                 {recent_activity}
             </aside>
         </div>
@@ -334,15 +400,7 @@ fn short_date(raw: &str) -> String {
     raw.get(..10).unwrap_or(raw).to_string()
 }
 
-fn initials(name: &str) -> String {
-    name.split_whitespace()
-        .filter_map(|part| part.chars().next())
-        .take(2)
-        .collect::<String>()
-        .to_uppercase()
-}
-
-fn month_day(raw: &str) -> String {
+pub(crate) fn month_day(raw: &str) -> String {
     const MONTHS: [&str; 12] = [
         "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
     ];

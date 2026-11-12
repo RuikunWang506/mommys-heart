@@ -158,7 +158,7 @@ pub fn CaseQuestionnaires(
                         {format!("{active_count} active")}
                     </span>
                 </div>
-                <div class="rounded-xl border border-amber-500/30 bg-slate-900 p-4">
+                <div class="rounded-card border border-amber-500/30 bg-slate-900 shadow-card p-4">
                     {active_tasks}
                 </div>
             </section>
@@ -201,7 +201,7 @@ pub fn CaseIntakeTaskSummary(case_id: String, properties: Vec<CaseProperty>) -> 
                 <h2 class="text-lg font-semibold text-slate-100">"Active tasks"</h2>
                 <p class="mt-1 text-sm text-slate-500">"Work that needs attention on this case."</p>
             </div>
-            <div class="rounded-xl border border-amber-500/30 bg-slate-900 p-4">
+            <div class="rounded-card border border-amber-500/30 bg-slate-900 shadow-card p-4">
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <div class="flex flex-wrap items-center gap-2">

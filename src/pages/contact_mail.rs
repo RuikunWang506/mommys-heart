@@ -551,12 +551,12 @@ fn ContactMailWorkspace() -> impl IntoView {
                     <div class="mt-3 flex justify-between gap-3">
                         <button type="button" on:click=move |_| offset.update(|value| *value = (*value - 50).max(0))
                             prop:disabled=move || offset.get() == 0
-                            class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-300 disabled:opacity-40">"Previous"</button>
+                            class="rounded-full border border-slate-700 px-3 py-1.5 text-sm text-slate-300 disabled:opacity-40">"Previous"</button>
                         <button type="button" on:click=move |_| offset.update(|value| *value += 50)
                             prop:disabled=move || {
                                 offset.get() + candidates.get().len() as i64 >= total.get()
                             }
-                            class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-300 disabled:opacity-40">"Next"</button>
+                            class="rounded-full border border-slate-700 px-3 py-1.5 text-sm text-slate-300 disabled:opacity-40">"Next"</button>
                     </div>
                 </section>
 

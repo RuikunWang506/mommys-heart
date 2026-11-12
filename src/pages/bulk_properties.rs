@@ -352,7 +352,7 @@ fn BulkPropertiesWorkspace() -> impl IntoView {
                 on:click=move |_| switch_subject(target)
                 class=move || {
                     if subject.get() == target {
-                        "rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white"
+                        "rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white"
                     } else {
                         "rounded-full border border-slate-700 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800"
                     }
@@ -739,7 +739,7 @@ fn BulkPropertiesWorkspace() -> impl IntoView {
                         type="button"
                         prop:disabled=move || offset.get() == 0
                         on:click=move |_| offset.update(|value| *value = (*value - CANDIDATE_PAGE_SIZE).max(0))
-                        class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-300 disabled:opacity-40"
+                        class="rounded-full border border-slate-700 px-3 py-1.5 text-sm text-slate-300 disabled:opacity-40"
                     >
                         "Previous"
                     </button>
@@ -747,7 +747,7 @@ fn BulkPropertiesWorkspace() -> impl IntoView {
                         type="button"
                         prop:disabled=move || on_last_page.get()
                         on:click=move |_| offset.update(|value| *value += CANDIDATE_PAGE_SIZE)
-                        class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-300 disabled:opacity-40"
+                        class="rounded-full border border-slate-700 px-3 py-1.5 text-sm text-slate-300 disabled:opacity-40"
                     >
                         "Next"
                     </button>

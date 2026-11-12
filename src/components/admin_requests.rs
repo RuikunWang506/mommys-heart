@@ -395,7 +395,7 @@ fn RequestCard(request: AdminRequest, actionable: bool, reload: RwSignal<u32>) -
     let link_class = "inline-flex items-center rounded text-xs font-medium text-primary-300 underline decoration-dotted underline-offset-2 hover:text-primary-200 hover:decoration-solid";
 
     view! {
-        <article class="rounded-lg border border-slate-800 bg-slate-900 p-4">
+        <article class="rounded-card border border-slate-800 bg-slate-900 shadow-card p-4">
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <div class="min-w-0">
                     <div class="flex flex-wrap items-center gap-2">

@@ -1030,7 +1030,7 @@ fn ChannelThread(
                                 />
                                 <button
                                     disabled=true
-                                    class="shrink-0 cursor-not-allowed rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white opacity-50"
+                                    class="shrink-0 cursor-not-allowed rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white opacity-50"
                                 >
                                     "Send"
                                 </button>

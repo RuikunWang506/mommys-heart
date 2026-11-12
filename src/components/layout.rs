@@ -92,12 +92,8 @@ pub fn Layout(#[prop(into)] title: String, children: Children) -> impl IntoView 
     let user_name = user.full_name();
     let my_profile_href = format!("/profile/{}", user.id);
     let profile_title = format!("{user_name}, {}", role.label());
-    let initials: String = user_name
-        .split_whitespace()
-        .filter_map(|part| part.chars().next())
-        .take(2)
-        .collect::<String>()
-        .to_uppercase();
+    let initials = crate::helpers::format::initials(&user_name);
+    let profile_label = format!("My Profile: {profile_title}");
 
     let logout = move |_| {
         state.logout();
@@ -167,11 +163,11 @@ pub fn Layout(#[prop(into)] title: String, children: Children) -> impl IntoView 
                         <div class="ml-auto flex items-center gap-2 sm:gap-3">
                             <A
                                 href=my_profile_href.clone()
-                                attr:aria-label="My Profile"
                                 attr:title=profile_title
                                 attr:class="hidden sm:inline-flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-full bg-[#e3effa] text-sm font-bold text-[#1a5d99] hover:ring-2 hover:ring-[#cfe3f5] transition"
                             >
-                                {initials}
+                                <span aria-hidden="true">{initials}</span>
+                                <span class="sr-only">{profile_label}</span>
                             </A>
                             <button
                                 on:click=logout

@@ -541,8 +541,8 @@ pub fn CaseContactsPanel(case_id: String, can_edit: bool) -> impl IntoView {
         let generation = debounce_generation.get_untracked();
         set_timeout(
             move || {
-                if debounce_generation.get_untracked() == generation {
-                    debounced_search_query.set(value);
+                if debounce_generation.try_get_untracked() == Some(generation) {
+                    let _ = debounced_search_query.try_set(value);
                 }
             },
             std::time::Duration::from_millis(300),

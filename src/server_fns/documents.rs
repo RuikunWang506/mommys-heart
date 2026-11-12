@@ -65,6 +65,10 @@ pub struct CaseDocumentListing {
     pub can_delete: bool,
 }
 
+/// The error a listing returns when the folder asked for is gone, which
+/// setting up the case's folders can repair.
+pub const MISSING_FOLDER: &str = "That folder no longer exists.";
+
 /// Maximum accepted upload size (25 MB), enforced by an explicit byte check.
 pub const MAX_SIZE_BYTES: usize = 25 * 1024 * 1024;
 
@@ -138,7 +142,7 @@ async fn resolve_folder(
         .resolve_path(&folder.item_id, &relative)
         .await
         .map_err(ServerFnError::new)?
-        .ok_or_else(|| ServerFnError::new("That folder no longer exists."))?;
+        .ok_or_else(|| ServerFnError::new(MISSING_FOLDER))?;
 
     Ok((user, segments, item_id))
 }
@@ -210,7 +214,7 @@ pub async fn list_case_documents(
             .resolve_item(&folder.item_id, &relative)
             .await
             .map_err(ServerFnError::new)?
-            .ok_or_else(|| ServerFnError::new("That folder no longer exists."))?
+            .ok_or_else(|| ServerFnError::new(MISSING_FOLDER))?
     };
 
     let raw = store
@@ -447,7 +451,7 @@ pub async fn delete_case_document(case_id: String, path: String) -> Result<(), S
         .resolve_path(&folder.item_id, &parent_path)
         .await
         .map_err(ServerFnError::new)?
-        .ok_or_else(|| ServerFnError::new("That folder no longer exists."))?;
+        .ok_or_else(|| ServerFnError::new(MISSING_FOLDER))?;
     let is_folder = store
         .list_children(&parent_id)
         .await

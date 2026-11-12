@@ -338,7 +338,7 @@ fn CrmImportWorkspace() -> impl IntoView {
                 on:click=move |_| switch_subject(target)
                 class=move || {
                     if subject.get() == target {
-                        "rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white"
+                        "rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white"
                     } else {
                         "rounded-full border border-slate-700 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800"
                     }
@@ -858,7 +858,7 @@ fn ColumnCard(
                                         },
                                         Some(MatchKind::ExistingProperty),
                                     )
-                                    class="rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-left text-xs text-amber-100 hover:bg-amber-500/20"
+                                    class="rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-left text-xs text-amber-100 hover:bg-amber-500/20"
                                 >
                                     <span class="block font-semibold">"Use " {label}</span>
                                     <span class="block text-amber-300/80">{reason}</span>
