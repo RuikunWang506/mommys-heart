@@ -115,7 +115,7 @@ pub fn CaseAccessTab(
                     <button
                         on:click=move |_| window.update(|w| *w += PAGE_SIZE)
                         prop:disabled=move || loading.get()
-                        class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800 disabled:opacity-50"
+                        class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800 disabled:opacity-50"
                     >
                         {move || if loading.get() { "Loading\u{2026}" } else { "Load more" }}
                     </button>
@@ -141,7 +141,7 @@ pub fn CaseAccessTab(
             }}
         </p>
         <input
-            class="mb-4 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40"
+            class="mb-4 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40"
             placeholder="Search users by name or email"
             prop:value=move || query.get()
             on:input=move |ev| {
@@ -152,7 +152,7 @@ pub fn CaseAccessTab(
         />
         <div class="space-y-4">{list}</div>
         {footer}
-        <div class="mb-6 rounded-xl border border-slate-800 bg-slate-900 p-5">
+        <div class="mb-6 rounded-card border border-slate-800 bg-slate-900 shadow-card p-5">
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="text-sm font-semibold text-slate-200">
@@ -164,7 +164,7 @@ pub fn CaseAccessTab(
                 </div>
                 <button
                     on:click=move |_| failures_open.update(|o| *o = !*o)
-                    class="rounded-lg border border-slate-700 px-2 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800"
+                    class="rounded-full border border-slate-700 px-2 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800"
                 >
                     {move || if failures_open.get() { "Hide" } else { "Show" }}
                 </button>

@@ -91,11 +91,9 @@ pub fn Layout(#[prop(into)] title: String, children: Children) -> impl IntoView 
     let role = user.role;
     let user_name = user.full_name();
     let my_profile_href = format!("/profile/{}", user.id);
-    let role_label = role.label();
-    let role_badge = format!(
-        "rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap {}",
-        role.badge_classes(),
-    );
+    let profile_title = format!("{user_name}, {}", role.label());
+    let initials = crate::helpers::format::initials(&user_name);
+    let profile_label = format!("My Profile: {profile_title}");
 
     let logout = move |_| {
         state.logout();
@@ -163,26 +161,24 @@ pub fn Layout(#[prop(into)] title: String, children: Children) -> impl IntoView 
                         </nav>
 
                         <div class="ml-auto flex items-center gap-2 sm:gap-3">
-                            <div class="hidden sm:flex xl:hidden 2xl:flex flex-col items-end leading-tight">
-                                <span class="text-sm font-medium whitespace-nowrap">{user_name}</span>
-                                <span class=role_badge>{role_label}</span>
-                            </div>
                             <A
                                 href=my_profile_href.clone()
-                                attr:class="hidden sm:inline-flex whitespace-nowrap rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+                                attr:title=profile_title
+                                attr:class="hidden sm:inline-flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-full bg-[#e3effa] text-sm font-bold text-[#1a5d99] hover:ring-2 hover:ring-[#cfe3f5] transition"
                             >
-                                "My Profile"
+                                <span aria-hidden="true">{initials}</span>
+                                <span class="sr-only">{profile_label}</span>
                             </A>
                             <button
                                 on:click=logout
-                                class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium whitespace-nowrap text-slate-300 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+                                class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium whitespace-nowrap text-slate-300 hover:bg-slate-800 hover:text-slate-100 transition-colors"
                             >
                                 "Log out"
                             </button>
                             <button
                                 on:click=toggle_menu
                                 aria-label="Toggle navigation menu"
-                                class="xl:hidden grid h-9 w-9 place-items-center rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+                                class="xl:hidden grid h-9 w-9 place-items-center rounded-full border border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-slate-100 transition-colors"
                             >
                                 {move || if menu_open.get() { "\u{2715}" } else { "\u{2630}" }}
                             </button>

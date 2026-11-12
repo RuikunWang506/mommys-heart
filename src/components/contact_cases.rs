@@ -125,7 +125,7 @@ fn ContactCaseRow(link: ContactCaseLink, on_changed: Callback<()>) -> impl IntoV
                             type="button"
                             on:click=begin_edit
                             attr:aria-label=move || edit_label.get_value()
-                            class="rounded-lg border border-slate-700 px-2 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800"
+                            class="rounded-full border border-slate-700 px-2 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800"
                         >
                             "Edit"
                         </button>
@@ -134,7 +134,7 @@ fn ContactCaseRow(link: ContactCaseLink, on_changed: Callback<()>) -> impl IntoV
                             on:click=remove.clone()
                             prop:disabled=move || busy.get()
                             attr:aria-label=move || remove_label.get_value()
-                            class="rounded-lg border border-slate-700 px-2 py-1 text-xs font-medium text-slate-400 hover:bg-slate-800 disabled:opacity-50"
+                            class="rounded-full border border-slate-700 px-2 py-1 text-xs font-medium text-slate-400 hover:bg-slate-800 disabled:opacity-50"
                         >
                             "Remove"
                         </button>
@@ -156,7 +156,7 @@ fn ContactCaseRow(link: ContactCaseLink, on_changed: Callback<()>) -> impl IntoV
                             type="button"
                             on:click=save
                             prop:disabled=move || busy.get()
-                            class="rounded-lg bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
+                            class="rounded-full bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
                         >
                             {move || if busy.get() { "Saving…" } else { "Save changes" }}
                         </button>
@@ -164,7 +164,7 @@ fn ContactCaseRow(link: ContactCaseLink, on_changed: Callback<()>) -> impl IntoV
                             type="button"
                             on:click=cancel
                             prop:disabled=move || busy.get()
-                            class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
+                            class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
                         >
                             "Cancel"
                         </button>
@@ -173,7 +173,7 @@ fn ContactCaseRow(link: ContactCaseLink, on_changed: Callback<()>) -> impl IntoV
                             on:click=remove
                             prop:disabled=move || busy.get()
                             attr:aria-label=move || remove_label.get_value()
-                            class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-400 hover:bg-slate-800 disabled:opacity-50"
+                            class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-400 hover:bg-slate-800 disabled:opacity-50"
                         >
                             "Remove"
                         </button>
@@ -337,7 +337,7 @@ pub fn ContactCasesPanel(contact_id: String) -> impl IntoView {
                 <div
                     id=results_id.get_value()
                     role="listbox"
-                    class="absolute z-10 mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-500"
+                    class="absolute z-10 mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-500"
                 >
                     "Type a case name or ID to search the cases you can edit."
                 </div>
@@ -349,7 +349,7 @@ pub fn ContactCasesPanel(contact_id: String) -> impl IntoView {
                 <div
                     id=results_id.get_value()
                     role="listbox"
-                    class="absolute z-10 mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-500"
+                    class="absolute z-10 mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-500"
                 >
                     "Searching…"
                 </div>
@@ -362,7 +362,7 @@ pub fn ContactCasesPanel(contact_id: String) -> impl IntoView {
                 <div
                     id=results_id.get_value()
                     role="listbox"
-                    class="absolute z-10 mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-500"
+                    class="absolute z-10 mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-500"
                 >
                     "No matching editable cases."
                 </div>
@@ -409,7 +409,7 @@ pub fn ContactCasesPanel(contact_id: String) -> impl IntoView {
             <div
                 id=results_id.get_value()
                 role="listbox"
-                class="absolute z-10 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-slate-700 bg-slate-950"
+                class="absolute z-10 mt-1 max-h-56 w-full overflow-y-auto rounded-xl border border-slate-700 bg-slate-900"
             >
                 {rows}
             </div>
@@ -471,7 +471,7 @@ pub fn ContactCasesPanel(contact_id: String) -> impl IntoView {
                     on:click=toggle_adding
                     aria-expanded=move || adding.get().to_string()
                     aria-controls=add_region_id.get_value()
-                    class="shrink-0 rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600"
+                    class="shrink-0 rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600"
                 >
                     {move || if adding.get() { "Cancel" } else { "+ Add case" }}
                 </button>
@@ -566,7 +566,7 @@ pub fn ContactCasesPanel(contact_id: String) -> impl IntoView {
                         type="button"
                         on:click=submit
                         prop:disabled=move || busy.get() || selected_case_id.get().is_empty()
-                        class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
+                        class="rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
                     >
                         {move || if busy.get() { "Adding…" } else { "Add to case" }}
                     </button>

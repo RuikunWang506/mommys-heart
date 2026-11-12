@@ -135,7 +135,7 @@ pub fn ReportChart(table: ReportTable, chart: ChartSpec) -> impl IntoView {
     };
 
     view! {
-        <div class="rounded-xl border border-slate-800 bg-slate-900 p-5">
+        <div class="rounded-card border border-slate-800 bg-slate-900 shadow-card p-5">
             <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
                 <h2 class="text-sm font-semibold text-slate-200">{chart.kind.label()}</h2>
                 <div class="flex flex-wrap items-center gap-3">{legend}</div>

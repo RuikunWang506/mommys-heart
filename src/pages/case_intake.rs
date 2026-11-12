@@ -65,7 +65,7 @@ pub fn CaseIntakePage() -> impl IntoView {
                         }
                         if loading.get() {
                             return view! {
-                                <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
+                                <div class="rounded-card border border-slate-800 bg-slate-900 shadow-card p-4">
                                     <Loading label="Loading intake\u{2026}" />
                                 </div>
                             }
@@ -75,7 +75,7 @@ pub fn CaseIntakePage() -> impl IntoView {
                             let can_complete = case.capabilities.contains(&CaseCapability::AddNotes)
                                 && case.status.accepts_changes();
                             return view! {
-                                <header class="rounded-xl border border-slate-800 bg-slate-900 p-5">
+                                <header class="rounded-card border border-slate-800 bg-slate-900 shadow-card p-5">
                                     <div class="flex flex-wrap items-center justify-between gap-3">
                                         <div>
                                             <p class="text-xs font-semibold uppercase tracking-wide text-primary-400">

@@ -252,7 +252,7 @@ pub fn AdminRequestCenter(
                             })
                         }
                         prop:disabled=move || history_loading.get()
-                        class="rounded-lg border border-slate-700 px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
+                        class="rounded-full border border-slate-700 px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
                     >
                         {move || if history_loading.get() { "Loading..." } else { "Load more" }}
                     </button>
@@ -294,7 +294,7 @@ pub fn AdminRequestCenter(
                         prop:disabled=move || {
                             active_loading.get() || (history_open.get() && history_loading.get())
                         }
-                        class="rounded-lg border border-slate-700 px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
+                        class="rounded-full border border-slate-700 px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
                     >
                         "Refresh"
                     </button>
@@ -395,7 +395,7 @@ fn RequestCard(request: AdminRequest, actionable: bool, reload: RwSignal<u32>) -
     let link_class = "inline-flex items-center rounded text-xs font-medium text-primary-300 underline decoration-dotted underline-offset-2 hover:text-primary-200 hover:decoration-solid";
 
     view! {
-        <article class="rounded-lg border border-slate-800 bg-slate-900 p-4">
+        <article class="rounded-card border border-slate-800 bg-slate-900 shadow-card p-4">
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <div class="min-w-0">
                     <div class="flex flex-wrap items-center gap-2">
@@ -453,7 +453,7 @@ fn RequestCard(request: AdminRequest, actionable: bool, reload: RwSignal<u32>) -
                         </label>
                         <input
                             id=decision_note_id.clone()
-                            class="min-w-0 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+                            class="min-w-0 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
                             placeholder="Optional context for the requester"
                             maxlength="1000"
                             prop:disabled=move || deciding.get()
@@ -466,7 +466,7 @@ fn RequestCard(request: AdminRequest, actionable: bool, reload: RwSignal<u32>) -
                             type="button"
                             on:click=move |_| decide(true)
                             prop:disabled=move || deciding.get()
-                            class="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
+                            class="rounded-full bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
                         >
                             "Approve"
                         </button>
@@ -474,7 +474,7 @@ fn RequestCard(request: AdminRequest, actionable: bool, reload: RwSignal<u32>) -
                             type="button"
                             on:click=move |_| decide(false)
                             prop:disabled=move || deciding.get()
-                            class="rounded-lg border border-rose-500/40 px-3 py-2 text-sm font-semibold text-rose-300 hover:bg-rose-500/10 disabled:opacity-50"
+                            class="rounded-full border border-rose-500/40 px-3 py-2 text-sm font-semibold text-rose-300 hover:bg-rose-500/10 disabled:opacity-50"
                         >
                             "Deny"
                         </button>

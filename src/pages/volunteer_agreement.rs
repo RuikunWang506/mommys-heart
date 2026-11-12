@@ -33,7 +33,7 @@ use crate::server_fns::volunteer_applicants::apply_as_volunteer;
 use crate::server_fns::volunteers::apply_to_volunteer;
 use crate::state::AppState;
 
-const INPUT_CLASS: &str = "mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 disabled:cursor-not-allowed disabled:opacity-50";
+const INPUT_CLASS: &str = "mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 disabled:cursor-not-allowed disabled:opacity-50";
 const LABEL_CLASS: &str = "block text-sm font-medium text-slate-300";
 const HEADING_CLASS: &str = "mt-7 text-sm font-semibold text-slate-200";
 
@@ -201,7 +201,7 @@ fn agreement_page(public: bool) -> AnyView {
                             </p>
                             <A
                                 href="/login"
-                                attr:class="mt-5 inline-block rounded-lg border border-emerald-500/40 px-4 py-2 text-sm font-semibold text-emerald-200 hover:bg-emerald-500/10"
+                                attr:class="mt-5 inline-block rounded-full border border-emerald-500/40 px-4 py-2 text-sm font-semibold text-emerald-200 hover:bg-emerald-500/10"
                             >
                                 "Back to sign in"
                             </A>
@@ -697,14 +697,14 @@ fn agreement_page(public: bool) -> AnyView {
                             <div class="mt-7 flex flex-wrap items-center justify-end gap-3">
                                 <A
                                     href=if public { "/login" } else { "/profile" }
-                                    attr:class="min-h-10 rounded-lg border border-slate-700 px-5 py-2.5 text-sm font-semibold text-slate-300 hover:bg-slate-800"
+                                    attr:class="min-h-10 rounded-full border border-slate-700 px-5 py-2.5 text-sm font-semibold text-slate-300 hover:bg-slate-800"
                                 >
                                     "Cancel"
                                 </A>
                                 <button
                                     type="submit"
                                     disabled=move || !unlocked() || submitting.get()
-                                    class="min-w-36 rounded-lg bg-primary-500 px-6 py-3 text-sm font-bold text-white hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-60"
+                                    class="min-w-36 rounded-full bg-primary-500 px-6 py-3 text-sm font-bold text-white hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {move || if submitting.get() {
                                         "SUBMITTING\u{2026}"

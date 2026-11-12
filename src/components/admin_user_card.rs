@@ -507,7 +507,7 @@ pub fn UserCard(
                 <div
                     id=case_results_id.get_value()
                     role="listbox"
-                    class="absolute z-10 mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-500"
+                    class="absolute z-10 mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-500"
                 >
                     "No matching cases."
                 </div>
@@ -555,7 +555,7 @@ pub fn UserCard(
             <div
                 id=case_results_id.get_value()
                 role="listbox"
-                class="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-slate-700 bg-slate-950"
+                class="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-slate-700 bg-slate-900"
             >
                 {rows}
             </div>
@@ -593,7 +593,7 @@ pub fn UserCard(
                                 email_feedback.set(None);
                                 email_editing.set(true);
                             }
-                            class="mt-3 rounded-lg border border-slate-700 px-3 py-2 text-sm font-medium text-slate-200 hover:bg-slate-800"
+                            class="mt-3 rounded-full border border-slate-700 px-3 py-2 text-sm font-medium text-slate-200 hover:bg-slate-800"
                         >
                             "Change email address"
                         </button>
@@ -612,7 +612,7 @@ pub fn UserCard(
                                 type="email"
                                 maxlength="254"
                                 autocomplete="off"
-                                class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+                                class="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
                                 placeholder="name@example.org"
                                 prop:disabled=move || email_busy.get()
                                 prop:value=move || email_value.get()
@@ -631,7 +631,7 @@ pub fn UserCard(
                                 type="email"
                                 maxlength="254"
                                 autocomplete="off"
-                                class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+                                class="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
                                 placeholder="Type it again"
                                 prop:disabled=move || email_busy.get()
                                 prop:value=move || email_confirm.get()
@@ -643,7 +643,7 @@ pub fn UserCard(
                                 type="button"
                                 on:click=apply_email_change
                                 prop:disabled=move || email_busy.get()
-                                class="rounded-lg bg-primary-500 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
+                                class="rounded-full bg-primary-500 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
                             >
                                 {move || if email_busy.get() { "Saving…" } else { "Save email address" }}
                             </button>
@@ -655,7 +655,7 @@ pub fn UserCard(
                                     email_confirm.set(String::new());
                                 }
                                 prop:disabled=move || email_busy.get()
-                                class="rounded-lg border border-slate-700 px-3 py-2 text-sm font-medium text-slate-200 hover:bg-slate-800 disabled:opacity-50"
+                                class="rounded-full border border-slate-700 px-3 py-2 text-sm font-medium text-slate-200 hover:bg-slate-800 disabled:opacity-50"
                             >
                                 "Cancel"
                             </button>
@@ -722,7 +722,7 @@ pub fn UserCard(
                         type="button"
                         on:click=reactivate_account
                         prop:disabled=move || status_busy.get()
-                        class="rounded-lg bg-primary-500 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
+                        class="rounded-full bg-primary-500 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
                     >
                         {move || if status_busy.get() { "Reactivating…" } else { "Reactivate account" }}
                     </button>
@@ -738,7 +738,7 @@ pub fn UserCard(
                             <button
                                 type="button"
                                 on:click=move |_| status_confirming.set(true)
-                                class="rounded-lg border border-rose-500/50 px-3 py-2 text-sm font-semibold text-rose-300 hover:bg-rose-500/10"
+                                class="rounded-full border border-rose-500/50 px-3 py-2 text-sm font-semibold text-rose-300 hover:bg-rose-500/10"
                             >
                                 "Deactivate account"
                             </button>
@@ -759,7 +759,7 @@ pub fn UserCard(
                                     id=status_reason_id.get_value()
                                     rows="2"
                                     maxlength="1000"
-                                    class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+                                    class="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
                                     placeholder="e.g. Duplicate account — merged into their other login"
                                     prop:disabled=move || status_busy.get()
                                     prop:value=move || status_reason.get()
@@ -771,7 +771,7 @@ pub fn UserCard(
                                     type="button"
                                     on:click=deactivate_account
                                     prop:disabled=move || status_busy.get()
-                                    class="rounded-lg bg-rose-500 px-3 py-2 text-sm font-semibold text-white hover:bg-rose-600 disabled:opacity-50"
+                                    class="rounded-full bg-rose-500 px-3 py-2 text-sm font-semibold text-white hover:bg-rose-600 disabled:opacity-50"
                                 >
                                     {move || if status_busy.get() { "Deactivating…" } else { "Confirm deactivation" }}
                                 </button>
@@ -779,7 +779,7 @@ pub fn UserCard(
                                     type="button"
                                     on:click=move |_| status_confirming.set(false)
                                     prop:disabled=move || status_busy.get()
-                                    class="rounded-lg border border-slate-700 px-3 py-2 text-sm font-medium text-slate-200 hover:bg-slate-800 disabled:opacity-50"
+                                    class="rounded-full border border-slate-700 px-3 py-2 text-sm font-medium text-slate-200 hover:bg-slate-800 disabled:opacity-50"
                                 >
                                     "Cancel"
                                 </button>
@@ -857,7 +857,7 @@ pub fn UserCard(
                         </label>
                         <select
                             id=role_select_id.get_value()
-                            class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                            class="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100"
                             prop:disabled=move || role_busy.get()
                             prop:value=move || selected_role.get()
                             on:change=move |event| selected_role.set(event_target_value(&event))
@@ -876,7 +876,7 @@ pub fn UserCard(
                         prop:disabled=move || {
                             role_busy.get() || selected_role.get() == current_role.slug()
                         }
-                        class="rounded-lg bg-primary-500 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
+                        class="rounded-full bg-primary-500 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
                     >
                         {move || if role_busy.get() { "Applying…" } else { "Apply role" }}
                     </button>
@@ -895,7 +895,7 @@ pub fn UserCard(
                         </label>
                         <select
                             id=role_select_id.get_value()
-                            class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                            class="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100"
                             prop:disabled=move || role_busy.get()
                             prop:value=move || selected_role.get()
                             on:change=move |event| selected_role.set(event_target_value(&event))
@@ -919,7 +919,7 @@ pub fn UserCard(
                             id=role_note_id.get_value()
                             rows="2"
                             maxlength="1000"
-                            class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+                            class="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
                             placeholder="Optional context for the site admin"
                             prop:disabled=move || role_busy.get()
                             prop:value=move || role_note.get()
@@ -932,7 +932,7 @@ pub fn UserCard(
                         prop:disabled=move || {
                             role_busy.get() || selected_role.get() == current_role.slug()
                         }
-                        class="rounded-lg border border-primary-500/50 px-3 py-2 text-sm font-semibold text-primary-300 hover:bg-primary-500/10 disabled:opacity-50"
+                        class="rounded-full border border-primary-500/50 px-3 py-2 text-sm font-semibold text-primary-300 hover:bg-primary-500/10 disabled:opacity-50"
                     >
                         {move || if role_busy.get() { "Submitting…" } else { "Request role" }}
                     </button>
@@ -1038,7 +1038,7 @@ pub fn UserCard(
                                     information_busy.get()
                                         || information_enabled.get() == current_information_access
                                 }
-                                class="rounded-lg bg-primary-500 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
+                                class="rounded-full bg-primary-500 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
                             >
                                 {move || if information_busy.get() { "Saving…" } else { "Save access" }}
                             </button>
@@ -1062,7 +1062,7 @@ pub fn UserCard(
                                     id=information_note_id.get_value()
                                     rows="2"
                                     maxlength="1000"
-                                    class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+                                    class="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
                                     placeholder="Optional context for the site admin"
                                     prop:disabled=move || information_busy.get()
                                     prop:value=move || information_request_note.get()
@@ -1073,7 +1073,7 @@ pub fn UserCard(
                                 type="button"
                                 on:click=request_information_access
                                 prop:disabled=move || information_busy.get()
-                                class="rounded-lg border border-primary-500/50 px-3 py-2 text-sm font-semibold text-primary-300 hover:bg-primary-500/10 disabled:opacity-50"
+                                class="rounded-full border border-primary-500/50 px-3 py-2 text-sm font-semibold text-primary-300 hover:bg-primary-500/10 disabled:opacity-50"
                             >
                                 {move || if information_busy.get() { "Submitting…" } else { "Request access" }}
                             </button>
@@ -1144,7 +1144,7 @@ pub fn UserCard(
                     type="button"
                     on:click=save_edit
                     prop:disabled=move || saving.get()
-                    class="rounded-lg bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
+                    class="rounded-full bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
                 >
                     {move || if saving.get() {
                         if can_edit_capabilities_directly {
@@ -1161,7 +1161,7 @@ pub fn UserCard(
                 <button
                     type="button"
                     on:click=cancel_edit
-                    class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800"
+                    class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800"
                 >
                     "Cancel"
                 </button>
@@ -1172,7 +1172,7 @@ pub fn UserCard(
                 <button
                     type="button"
                     on:click=begin_edit
-                    class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
+                    class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
                 >
                     "Edit"
                 </button>
@@ -1202,7 +1202,7 @@ pub fn UserCard(
                                     .get()
                                     .map(|index| format!("{}-{index}", case_results_id.get_value()))
                             }
-                            class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+                            class="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
                             placeholder="Case name or ID"
                             prop:value=move || {
                                 let label = new_case_label.get();
@@ -1270,7 +1270,7 @@ pub fn UserCard(
                         </label>
                         <select
                             id=case_preset_id.get_value()
-                            class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                            class="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100"
                             prop:value=move || new_preset.get()
                             on:change=move |event| new_preset.set(event_target_value(&event))
                         >
@@ -1286,7 +1286,7 @@ pub fn UserCard(
                         type="button"
                         on:click=add_to_draft
                         prop:disabled=move || new_case.get().is_empty()
-                        class="rounded-lg bg-primary-500 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
+                        class="rounded-full bg-primary-500 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
                     >
                         "Add"
                     </button>
@@ -1305,7 +1305,7 @@ pub fn UserCard(
                             id=capability_note_id.get_value()
                             rows="2"
                             maxlength="1000"
-                            class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+                            class="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
                             placeholder="Optional context for the site admin"
                             prop:value=move || capability_request_note.get()
                             on:input=move |event| capability_request_note.set(event_target_value(&event))
@@ -1404,7 +1404,7 @@ pub fn UserCard(
                                             <button
                                                 type="button"
                                                 on:click=move |_| row_removed.update(|removed| *removed = !*removed)
-                                                class="rounded-lg border border-rose-500/40 px-2 py-1 text-xs font-medium text-rose-300 hover:bg-rose-500/10"
+                                                class="rounded-full border border-rose-500/40 px-2 py-1 text-xs font-medium text-rose-300 hover:bg-rose-500/10"
                                             >
                                                 {move || if row_removed.get() { "Undo remove" } else { "Remove" }}
                                             </button>
@@ -1512,7 +1512,7 @@ pub fn UserCard(
     let log_section_id = StoredValue::new(format!("user-change-log-{user_id}"));
 
     view! {
-        <div class="rounded-xl border border-slate-800 bg-slate-900 p-5">
+        <div class="rounded-card border border-slate-800 bg-slate-900 shadow-card p-5">
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <div>
                     <p class="font-medium text-slate-100">{full_name}</p>
@@ -1541,7 +1541,7 @@ pub fn UserCard(
                             on:click=move |_| log_open.update(|open| *open = !*open)
                             aria-expanded=move || log_open.get().to_string()
                             aria-controls=log_section_id.get_value()
-                            class="rounded-lg border border-slate-700 px-2 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800"
+                            class="rounded-full border border-slate-700 px-2 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800"
                         >
                             {move || if log_open.get() { "Hide" } else { "Open change log" }}
                         </button>

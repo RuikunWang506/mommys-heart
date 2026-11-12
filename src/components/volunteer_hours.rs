@@ -10,9 +10,9 @@ use crate::server_fns::volunteer_hours::{
 };
 use crate::state::today;
 
-const INPUT_CLASS: &str = "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40";
+const INPUT_CLASS: &str = "w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40";
 const LABEL_CLASS: &str = "text-xs font-medium text-slate-400";
-const SECTION_CLASS: &str = "rounded-xl border border-slate-800 bg-slate-900 p-4";
+const SECTION_CLASS: &str = "rounded-card border border-slate-800 bg-slate-900 shadow-card p-4";
 
 #[derive(Clone, Default)]
 struct HourDraft {
@@ -275,7 +275,7 @@ pub fn VolunteerHoursPanel(
                         <button
                             type="button"
                             on:click=open_add
-                            class="rounded-lg bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-600"
+                            class="rounded-full bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-600"
                         >
                             "Log hours"
                         </button>
@@ -345,7 +345,7 @@ pub fn VolunteerHoursPanel(
                         type="button"
                         on:click=save
                         prop:disabled=move || saving.get()
-                        class="mt-3 rounded-lg bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-60"
+                        class="mt-3 rounded-full bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-60"
                     >
                         {move || if saving.get() { "Saving..." } else { "Save hours" }}
                     </button>

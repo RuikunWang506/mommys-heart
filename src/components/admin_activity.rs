@@ -152,7 +152,7 @@ pub fn AdminActivityFeed() -> impl IntoView {
                     <button
                         on:click=move |_| window.update(|w| *w += PAGE_SIZE)
                         prop:disabled=move || loading.get()
-                        class="rounded-lg border border-slate-700 px-2 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
+                        class="rounded-full border border-slate-700 px-2 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
                     >
                         {move || if loading.get() { "Loading\u{2026}" } else { "Load more" }}
                     </button>
@@ -179,7 +179,7 @@ pub fn AdminActivityFeed() -> impl IntoView {
                 "Show"
                 <select
                     on:change=on_filter
-                    class="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1 text-xs text-slate-100 focus:border-primary-500 focus:outline-none"
+                    class="rounded-xl border border-slate-700 bg-slate-900 px-2 py-1 text-xs text-slate-100 focus:border-primary-500 focus:outline-none"
                 >
                     <option value="">"Everything"</option>
                     {AdminActivityCategory::ALL

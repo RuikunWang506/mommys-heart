@@ -13,7 +13,7 @@ use crate::server_fns::err_text;
 use crate::server_fns::volunteer_documents::{delete_my_resume, my_resume, RESUME_ACCEPT_LABEL};
 use crate::server_fns::volunteers::VolunteerResume;
 
-const SECTION_CLASS: &str = "rounded-xl border border-slate-800 bg-slate-900 p-4";
+const SECTION_CLASS: &str = "rounded-card border border-slate-800 bg-slate-900 shadow-card p-4";
 
 /// Send the chosen file to the server. The pre-check here is only for quick
 /// feedback; the server re-validates every byte.
@@ -139,7 +139,7 @@ pub fn VolunteerResumePanel(
                 <div class="flex items-center gap-2">
                     <a
                         href=href
-                        class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
+                        class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
                     >
                         "Download"
                     </a>
@@ -147,7 +147,7 @@ pub fn VolunteerResumePanel(
                         <button
                             on:click=remove
                             prop:disabled=move || busy.get()
-                            class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-rose-300 hover:bg-slate-800 disabled:opacity-60"
+                            class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-rose-300 hover:bg-slate-800 disabled:opacity-60"
                         >
                             "Remove"
                         </button>
@@ -182,7 +182,7 @@ pub fn VolunteerResumePanel(
                         <button
                             on:click=upload
                             prop:disabled=move || busy.get()
-                            class="shrink-0 rounded-lg bg-primary-500 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-60"
+                            class="shrink-0 rounded-full bg-primary-500 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-60"
                         >
                             {move || {
                                 if busy.get() {

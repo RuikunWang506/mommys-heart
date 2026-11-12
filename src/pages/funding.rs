@@ -27,9 +27,9 @@ use crate::server_fns::grants::{
 use crate::server_fns::organizations::{search_active_organizations, ActiveOrganizationSummary};
 use crate::state::AppState;
 
-const PANEL: &str = "rounded-xl border border-slate-800 bg-slate-900 p-5";
+const PANEL: &str = "rounded-card border border-slate-800 bg-slate-900 shadow-card p-5";
 const INPUT: &str =
-    "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:border-primary-500 focus:outline-none";
+    "w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:border-primary-500 focus:outline-none";
 const LABEL: &str = "text-xs font-medium text-slate-400";
 
 #[component]
@@ -182,7 +182,7 @@ fn FundingWorkspace() -> impl IntoView {
                     <button
                         type="button"
                         on:click=move |_| creating_grant.update(|c| *c = !*c)
-                        class="shrink-0 rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600"
+                        class="shrink-0 rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600"
                     >
                         {move || if creating_grant.get() { "Cancel" } else { "+ New grant" }}
                     </button>
@@ -223,7 +223,7 @@ fn FundingWorkspace() -> impl IntoView {
                     <span>"Showing " {move || grants.get().len()} " of " {move || grant_total.get()} " grants"</span>
                     <Show when=move || (grants.get().len() as i64) < grant_total.get()>
                         <button type="button" on:click=move |_| grant_window.update(|value| *value += 50)
-                            class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-800">
+                            class="rounded-full border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-800">
                             "Load more grants"
                         </button>
                     </Show>
@@ -241,7 +241,7 @@ fn FundingWorkspace() -> impl IntoView {
                     <button
                         type="button"
                         on:click=move |_| recording.update(|r| *r = !*r)
-                        class="shrink-0 rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600"
+                        class="shrink-0 rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600"
                     >
                         {move || if recording.get() { "Cancel" } else { "+ Record funding" }}
                     </button>
@@ -278,7 +278,7 @@ fn FundingWorkspace() -> impl IntoView {
                     <span>"Showing " {move || ledger.get().len()} " of " {move || ledger_total.get()} " funding records"</span>
                     <Show when=move || (ledger.get().len() as i64) < ledger_total.get()>
                         <button type="button" on:click=move |_| ledger_window.update(|value| *value += 50)
-                            class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-800">
+                            class="rounded-full border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-800">
                             "Load more funding"
                         </button>
                     </Show>
@@ -372,7 +372,7 @@ fn FundingList(records: RwSignal<Vec<FundingRecord>>, on_changed: Callback<()>) 
                                         <button
                                             type="button"
                                             on:click=start_void.clone()
-                                            class="rounded-lg border border-slate-700 px-2 py-1 text-xs font-medium text-slate-400 hover:bg-slate-800"
+                                            class="rounded-full border border-slate-700 px-2 py-1 text-xs font-medium text-slate-400 hover:bg-slate-800"
                                         >
                                             "Void"
                                         </button>
@@ -412,14 +412,14 @@ fn FundingList(records: RwSignal<Vec<FundingRecord>>, on_changed: Callback<()>) 
                                         <button
                                             type="button"
                                             on:click=confirm_void
-                                            class="rounded-lg bg-rose-500/80 px-3 py-1.5 text-sm font-semibold text-white hover:bg-rose-500"
+                                            class="rounded-full bg-rose-500/80 px-3 py-1.5 text-sm font-semibold text-white hover:bg-rose-500"
                                         >
                                             "Confirm void"
                                         </button>
                                         <button
                                             type="button"
                                             on:click=move |_| voiding.set(String::new())
-                                            class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800"
+                                            class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800"
                                         >
                                             "Cancel"
                                         </button>
@@ -497,7 +497,7 @@ fn GrantDetail(grant_id: String) -> impl IntoView {
                             <button
                                 type="button"
                                 on:click=move |_| editing.update(|e| *e = !*e)
-                                class="shrink-0 rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
+                                class="shrink-0 rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
                             >
                                 {move || if editing.get() { "Cancel" } else { "Edit" }}
                             </button>
@@ -758,7 +758,7 @@ fn GrantForm(grant: Option<Grant>, on_saved: Callback<String>) -> impl IntoView 
                 type="button"
                 on:click=submit
                 prop:disabled=move || busy.get()
-                class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
+                class="rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
             >
                 {move || {
                     if busy.get() {
@@ -884,7 +884,7 @@ fn FundingForm(on_saved: Callback<String>) -> impl IntoView {
                 type="button"
                 on:click=submit
                 prop:disabled=move || busy.get()
-                class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
+                class="rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
             >
                 {move || if busy.get() { "Saving\u{2026}" } else { "Record funding" }}
             </button>

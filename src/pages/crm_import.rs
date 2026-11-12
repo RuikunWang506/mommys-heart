@@ -22,9 +22,9 @@ use crate::server_fns::err_text;
 use crate::server_fns::property_filters::PropertySubject;
 use crate::state::AppState;
 
-const INPUT: &str = "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40 disabled:cursor-not-allowed disabled:opacity-50";
+const INPUT: &str = "w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40 disabled:cursor-not-allowed disabled:opacity-50";
 const LABEL: &str = "mb-1 block text-xs font-medium text-slate-400";
-const PANEL: &str = "rounded-xl border border-slate-800 bg-slate-900 p-5";
+const PANEL: &str = "rounded-card border border-slate-800 bg-slate-900 shadow-card p-5";
 
 /// The `<select>` value meaning "a property, named by the inputs beside it".
 const PROPERTY_OPTION: &str = "__property";
@@ -338,9 +338,9 @@ fn CrmImportWorkspace() -> impl IntoView {
                 on:click=move |_| switch_subject(target)
                 class=move || {
                     if subject.get() == target {
-                        "rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white"
+                        "rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white"
                     } else {
-                        "rounded-lg border border-slate-700 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800"
+                        "rounded-full border border-slate-700 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800"
                     }
                 }
             >
@@ -367,7 +367,7 @@ fn CrmImportWorkspace() -> impl IntoView {
                             PropertySubject::Organization => "/organizations".to_string(),
                         }
                     }
-                    attr:class="rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-300 hover:bg-slate-800"
+                    attr:class="rounded-full border border-slate-700 px-3 py-2 text-sm text-slate-300 hover:bg-slate-800"
                 >
                     "Back"
                 </A>
@@ -416,7 +416,7 @@ fn CrmImportWorkspace() -> impl IntoView {
                             type="button"
                             on:click=upload
                             prop:disabled=move || uploading.get()
-                            class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
+                            class="rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
                         >
                             {move || if uploading.get() { "Reading\u{2026}" } else { "Read file" }}
                         </button>
@@ -502,7 +502,7 @@ fn CrmImportWorkspace() -> impl IntoView {
                                 type="button"
                                 on:click=move |_| run_plan()
                                 prop:disabled=move || busy.get()
-                                class="rounded-lg border border-slate-700 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-slate-800 disabled:opacity-50"
+                                class="rounded-full border border-slate-700 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-slate-800 disabled:opacity-50"
                             >
                                 {move || if busy.get() { "Checking\u{2026}" } else { "Check the import" }}
                             </button>
@@ -510,7 +510,7 @@ fn CrmImportWorkspace() -> impl IntoView {
                                 type="button"
                                 on:click=launch
                                 prop:disabled=move || busy.get() || plan.get().is_none()
-                                class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50"
+                                class="rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 {move || if busy.get() { "Starting\u{2026}" } else { "Import" }}
                             </button>
@@ -858,7 +858,7 @@ fn ColumnCard(
                                         },
                                         Some(MatchKind::ExistingProperty),
                                     )
-                                    class="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-left text-xs text-amber-100 hover:bg-amber-500/20"
+                                    class="rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-left text-xs text-amber-100 hover:bg-amber-500/20"
                                 >
                                     <span class="block font-semibold">"Use " {label}</span>
                                     <span class="block text-amber-300/80">{reason}</span>
@@ -875,7 +875,7 @@ fn ColumnCard(
                                     );
                                 }
                             }
-                            class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800"
+                            class="rounded-full border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800"
                         >
                             "Keep as a new property"
                         </button>
@@ -1057,7 +1057,7 @@ fn ImportTaskProgress(
                             type="button"
                             on:click=move |_| cancel.run(())
                             prop:disabled=move || busy.get() || status == ImportTaskStatus::Cancelling
-                            class="rounded-lg border border-rose-500/50 px-3 py-2 text-sm font-medium text-rose-300 hover:bg-rose-500/10 disabled:opacity-50"
+                            class="rounded-full border border-rose-500/50 px-3 py-2 text-sm font-medium text-rose-300 hover:bg-rose-500/10 disabled:opacity-50"
                         >
                             {if status == ImportTaskStatus::Cancelling { "Stopping\u{2026}" } else { "Stop import" }}
                         </button>

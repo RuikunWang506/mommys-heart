@@ -27,7 +27,7 @@ fn ToggleRow(
 ) -> impl IntoView {
     view! {
         <label
-            class="flex items-start gap-3 rounded-xl border border-slate-800 bg-slate-900 p-4 transition-opacity"
+            class="flex items-start gap-3 rounded-card border border-slate-800 bg-slate-900 shadow-card p-4 transition-opacity"
             class:opacity-50=move || disabled.get()
         >
             <input
@@ -171,7 +171,7 @@ pub fn SettingsPage() -> impl IntoView {
                         <button
                             on:click=save
                             prop:disabled=move || saving.get()
-                            class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-60"
+                            class="rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-60"
                         >
                             {move || if saving.get() { "Saving\u{2026}" } else { "Save changes" }}
                         </button>
