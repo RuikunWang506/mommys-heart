@@ -93,7 +93,7 @@ fn SignupHeader(#[prop(into)] title: String) -> impl IntoView {
 }
 
 /// Styling shared by the signature and contact fields on step one.
-const INPUT_CLASS: &str = "mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 disabled:cursor-not-allowed disabled:opacity-50";
+const INPUT_CLASS: &str = "mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 disabled:cursor-not-allowed disabled:opacity-50";
 const LABEL_CLASS: &str = "block text-sm font-medium text-slate-300";
 const HEADING_CLASS: &str = "mt-7 text-sm font-semibold text-slate-200";
 
@@ -567,14 +567,14 @@ pub fn CaseSignupTermsPage() -> impl IntoView {
                         <div class="mt-7 flex flex-wrap items-center justify-end gap-3">
                             <A
                                 href="/login"
-                                attr:class="min-h-10 rounded-lg border border-slate-700 px-5 py-2.5 text-sm font-semibold text-slate-300 hover:bg-slate-800"
+                                attr:class="min-h-10 rounded-full border border-slate-700 px-5 py-2.5 text-sm font-semibold text-slate-300 hover:bg-slate-800"
                             >
                                 "Decline"
                             </A>
                             <button
                                 type="submit"
                                 disabled=move || !accepted.get() || !read_to_end.get()
-                                class="min-w-36 rounded-lg bg-primary-500 px-6 py-3 text-sm font-bold text-white hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-60"
+                                class="min-w-36 rounded-full bg-primary-500 px-6 py-3 text-sm font-bold text-white hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-60"
                             >
                                 "ACCEPT AND CONTINUE"
                             </button>
@@ -665,7 +665,7 @@ pub fn CaseSignupDetailsPage() -> impl IntoView {
         }
     });
 
-    let input_class = "mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30";
+    let input_class = "mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30";
     let label_class = "block text-sm font-medium text-slate-300";
 
     let submit = {
@@ -808,7 +808,7 @@ pub fn CaseSignupDetailsPage() -> impl IntoView {
                             <button
                                 type="submit"
                                 disabled=move || pending.get()
-                                class="min-w-36 rounded-lg bg-primary-500 px-6 py-3 text-sm font-bold text-white hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-60"
+                                class="min-w-36 rounded-full bg-primary-500 px-6 py-3 text-sm font-bold text-white hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-60"
                             >
                                 {move || if pending.get() { "SUBMITTING..." } else { "SUBMIT" }}
                             </button>

@@ -153,12 +153,7 @@ impl UserProfile {
 
     /// Up to two uppercase initials for the avatar bubble.
     pub fn initials(&self) -> String {
-        self.full_name()
-            .split_whitespace()
-            .filter_map(|part| part.chars().next())
-            .take(2)
-            .flat_map(|c| c.to_uppercase())
-            .collect()
+        crate::helpers::format::initials(&self.full_name())
     }
 
     /// The editable subset of this profile, for seeding the edit form. Only

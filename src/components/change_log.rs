@@ -168,7 +168,7 @@ pub fn ChangeLog(
     });
 
     let date_input =
-        "mt-1 block rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm text-slate-100";
+        "mt-1 block rounded-xl border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-100";
 
     let body = move || {
         if let Some(msg) = invalid.get() {
@@ -198,7 +198,7 @@ pub fn ChangeLog(
                     <button
                         on:click=move |_| window.update(|w| *w += PAGE_SIZE)
                         prop:disabled=move || loading.get()
-                        class="rounded-lg border border-slate-700 px-2 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
+                        class="rounded-full border border-slate-700 px-2 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
                     >
                         {move || if loading.get() { "Loading\u{2026}" } else { "Load more" }}
                     </button>
@@ -246,7 +246,7 @@ pub fn ChangeLog(
                         from.set(shift_days(&t, -14));
                         to.set(t);
                     }
-                    class="rounded-lg border border-slate-700 px-2 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800"
+                    class="rounded-full border border-slate-700 px-2 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800"
                 >
                     "Last 2 weeks"
                 </button>

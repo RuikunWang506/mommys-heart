@@ -128,15 +128,11 @@ impl AccountRole {
 
     pub fn badge_classes(self) -> &'static str {
         match self {
-            AccountRole::SiteAdmin => {
-                "bg-primary-500/15 text-primary-300 ring-1 ring-primary-500/30"
-            }
-            AccountRole::OperationsAdmin => {
-                "bg-amber-500/15 text-amber-300 ring-1 ring-amber-500/30"
-            }
-            AccountRole::Volunteer => "bg-sky-500/15 text-sky-300 ring-1 ring-sky-500/30",
-            AccountRole::Client => "bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/30",
-            AccountRole::Deactivated => "bg-slate-700/40 text-slate-400 ring-1 ring-slate-600",
+            AccountRole::SiteAdmin => "bg-[#e3effa] text-[#1a5d99]",
+            AccountRole::OperationsAdmin => "bg-[#fef3c7] text-[#7a4a06]",
+            AccountRole::Volunteer => "bg-[#f3ece1] text-[#5b4f43]",
+            AccountRole::Client => "bg-[#e3f5ec] text-[#11633f]",
+            AccountRole::Deactivated => "bg-slate-950 text-slate-500 ring-1 ring-slate-700",
         }
     }
 }

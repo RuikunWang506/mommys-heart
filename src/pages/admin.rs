@@ -99,7 +99,7 @@ fn admin_page(workspace: AdminWorkspace, selected_id: Option<String>) -> AnyView
             }
             .into_any(),
             AdminWorkspace::Activity => view! {
-                <section class="rounded-xl border border-slate-800 bg-slate-900 p-5">
+                <section class="rounded-card border border-slate-800 bg-slate-900 shadow-card p-5">
                     <h2 class="text-sm font-semibold text-slate-200">"Site activity"</h2>
                     <p class="mt-1 text-xs text-slate-500">
                         "New cases, case notes, information edits, documents, and contact changes \
@@ -152,7 +152,7 @@ fn AdminTools() -> impl IntoView {
                 </button>
             </h2>
             <Show when=move || open.get()>
-                <div id="admin-tools-content" class="mt-4 rounded-xl border border-slate-800 bg-slate-900 p-5">
+                <div id="admin-tools-content" class="mt-4 rounded-card border border-slate-800 bg-slate-900 shadow-card p-5">
                     <h3 class="text-sm font-semibold text-slate-200">"Email delivery failures"</h3>
                     <p class="mt-1 text-xs text-slate-500">
                         "Outbound emails that failed to send, newest first."

@@ -21,9 +21,9 @@ use crate::server_fns::err_text;
 use crate::state::{now_stamp, today, AppState};
 
 const PAGE_SIZE: i64 = 10;
-const INPUT_CLASS: &str = "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40 disabled:cursor-not-allowed disabled:opacity-60";
+const INPUT_CLASS: &str = "w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40 disabled:cursor-not-allowed disabled:opacity-60";
 const LABEL_CLASS: &str = "block text-xs font-medium text-slate-400";
-const PANEL_CLASS: &str = "rounded-xl border border-slate-800 bg-slate-900 p-4";
+const PANEL_CLASS: &str = "rounded-card border border-slate-800 bg-slate-900 shadow-card p-4";
 
 trait ChoiceLabel: Copy {
     fn choice_label(self) -> &'static str;
@@ -342,7 +342,7 @@ pub fn CaseNotesPanel(case_id: String, can_add: bool) -> impl IntoView {
                                     </Show>
                                 </p>
                             </div>
-                            <A href=href attr:class="shrink-0 rounded-lg border border-primary-500/40 px-3 py-1.5 text-sm font-medium text-primary-300 hover:bg-primary-500/10">
+                            <A href=href attr:class="shrink-0 rounded-full border border-primary-500/40 px-3 py-1.5 text-sm font-medium text-primary-300 hover:bg-primary-500/10">
                                 {action}
                             </A>
                         </div>
@@ -367,7 +367,7 @@ pub fn CaseNotesPanel(case_id: String, can_add: bool) -> impl IntoView {
                         type="button"
                         prop:disabled=move || loading.get()
                         on:click=move |_| window.update(|count| *count += PAGE_SIZE)
-                        class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800 disabled:opacity-50"
+                        class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800 disabled:opacity-50"
                     >
                         {move || if loading.get() { "Loading…" } else { "Load more" }}
                     </button>
@@ -389,7 +389,7 @@ pub fn CaseNotesPanel(case_id: String, can_add: bool) -> impl IntoView {
                         <p class="mt-1 text-sm text-slate-500">"Structured staff notes, finalized legacy notes, drafts you own, and administratively visible draft rows."</p>
                     </div>
                     <Show when=move || can_add>
-                        <A href=new_href.clone() attr:class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600">
+                        <A href=new_href.clone() attr:class="rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600">
                             "+ New structured note"
                         </A>
                     </Show>
@@ -474,8 +474,8 @@ pub fn CaseNotesPanel(case_id: String, can_add: bool) -> impl IntoView {
                         </select>
                     </div>
                     <div class="flex items-end gap-2">
-                        <button type="button" on:click=apply_filters class="rounded-lg bg-primary-500 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-600">"Apply"</button>
-                        <button type="button" on:click=clear_filters class="rounded-lg border border-slate-700 px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800">"Clear"</button>
+                        <button type="button" on:click=apply_filters class="rounded-full bg-primary-500 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-600">"Apply"</button>
+                        <button type="button" on:click=clear_filters class="rounded-full border border-slate-700 px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800">"Clear"</button>
                     </div>
                 </div>
             </div>
@@ -1059,7 +1059,7 @@ fn AddendumForm(
                     type="button"
                     prop:disabled=move || busy.get()
                     on:click=submit
-                    class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
+                    class="rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50"
                 >
                     {move || if busy.get() { "Adding…" } else { "Add addendum" }}
                 </button>
@@ -1165,7 +1165,7 @@ fn FiledRecordPanel(note_id: String, case_id: String, can_file: bool) -> impl In
                             type="button"
                             prop:disabled=move || busy.get()
                             on:click=file_now
-                            class="rounded-lg border border-slate-700 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800 disabled:opacity-50"
+                            class="rounded-full border border-slate-700 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800 disabled:opacity-50"
                         >
                             {move || if busy.get() { "Filing\u{2026}" } else { "File it now" }}
                         </button>
@@ -1200,7 +1200,7 @@ fn FiledRecordPanel(note_id: String, case_id: String, can_file: bool) -> impl In
                 <div class="flex flex-wrap gap-2">
                     <a
                         href=download_href
-                        class="rounded-lg border border-primary-500/40 px-3 py-1.5 text-sm font-medium text-primary-300 hover:bg-primary-500/10"
+                        class="rounded-full border border-primary-500/40 px-3 py-1.5 text-sm font-medium text-primary-300 hover:bg-primary-500/10"
                     >
                         "Download"
                     </a>
@@ -1209,7 +1209,7 @@ fn FiledRecordPanel(note_id: String, case_id: String, can_file: bool) -> impl In
                             href=web_url.clone()
                             target="_blank"
                             rel="noreferrer"
-                            class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800"
+                            class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800"
                         >
                             "Open in SharePoint"
                         </a>
@@ -1219,7 +1219,7 @@ fn FiledRecordPanel(note_id: String, case_id: String, can_file: bool) -> impl In
                             type="button"
                             prop:disabled=move || busy.get()
                             on:click=file_now
-                            class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
+                            class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
                         >
                             {move || if busy.get() { "Filing\u{2026}" } else { "Write it again now" }}
                         </button>
@@ -1352,7 +1352,7 @@ pub fn NewCaseNotePage() -> impl IntoView {
                             <h1 class="mt-2 text-2xl font-semibold text-slate-100">"New structured case note"</h1>
                             <p class="text-sm text-slate-500">"Case " {case_id.get_value()}</p>
                         </div>
-                        <button type="button" prop:disabled=move || busy.get() on:click=move |_| finalize.run(()) class="rounded-lg bg-primary-500 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50">
+                        <button type="button" prop:disabled=move || busy.get() on:click=move |_| finalize.run(()) class="rounded-full bg-primary-500 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50">
                             {move || if busy.get() { "Creating…" } else { "Create case note" }}
                         </button>
                     </div>
@@ -1637,7 +1637,7 @@ pub fn CaseNoteDetailPage() -> impl IntoView {
                             <p class="mt-1 text-xs text-slate-500">"Discarded " {discarded_at.clone()}</p>
                         </Show>
                     </div>
-                    <A href="/cases" attr:class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800">"Back to cases"</A>
+                    <A href="/cases" attr:class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800">"Back to cases"</A>
                 </div>
             </div>
         };
@@ -1648,9 +1648,9 @@ pub fn CaseNoteDetailPage() -> impl IntoView {
                     <DraftForm draft=draft errors=errors />
                     <FinalizePanel signature=signature accuracy_confirmed=accuracy_confirmed errors=errors />
                     <div class="flex flex-wrap gap-2">
-                        <button type="button" prop:disabled=move || busy.get() on:click=save_draft class="rounded-lg border border-slate-700 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800 disabled:opacity-50">"Save draft"</button>
-                        <button type="button" prop:disabled=move || busy.get() on:click=finalize_draft class="rounded-lg bg-primary-500 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50">"Finalize"</button>
-                        <button type="button" prop:disabled=move || busy.get() on:click=discard_draft class="rounded-lg border border-rose-500/40 px-3 py-2 text-sm font-semibold text-rose-300 hover:bg-rose-500/10 disabled:opacity-50">"Discard draft"</button>
+                        <button type="button" prop:disabled=move || busy.get() on:click=save_draft class="rounded-full border border-slate-700 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800 disabled:opacity-50">"Save draft"</button>
+                        <button type="button" prop:disabled=move || busy.get() on:click=finalize_draft class="rounded-full bg-primary-500 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50">"Finalize"</button>
+                        <button type="button" prop:disabled=move || busy.get() on:click=discard_draft class="rounded-full border border-rose-500/40 px-3 py-2 text-sm font-semibold text-rose-300 hover:bg-rose-500/10 disabled:opacity-50">"Discard draft"</button>
                     </div>
                 </>
             }
@@ -1659,7 +1659,7 @@ pub fn CaseNoteDetailPage() -> impl IntoView {
             view! {
                 <div class="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
                     <p>"This is another user's draft. Content remains hidden until you explicitly inspect it, which writes an audit event."</p>
-                    <button type="button" prop:disabled=move || busy.get() on:click=inspect_draft class="mt-3 rounded-lg bg-amber-500/20 px-3 py-2 text-sm font-semibold text-amber-100 hover:bg-amber-500/30 disabled:opacity-50">"Inspect draft and record audit"</button>
+                    <button type="button" prop:disabled=move || busy.get() on:click=inspect_draft class="mt-3 rounded-full bg-amber-500/20 px-3 py-2 text-sm font-semibold text-amber-100 hover:bg-amber-500/30 disabled:opacity-50">"Inspect draft and record audit"</button>
                 </div>
             }
             .into_any()

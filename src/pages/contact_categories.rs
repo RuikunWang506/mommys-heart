@@ -24,11 +24,11 @@ use crate::server_fns::contacts::ContactType;
 use crate::server_fns::err_text;
 use crate::state::AppState;
 
-const INPUT: &str = "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40";
+const INPUT: &str = "w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40";
 const LABEL: &str = "mb-1 block text-xs font-medium text-slate-400";
-const PANEL: &str = "rounded-xl border border-slate-800 bg-slate-900 p-5";
-const BTN: &str = "rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50";
-const PRIMARY_BTN: &str = "rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50";
+const PANEL: &str = "rounded-card border border-slate-800 bg-slate-900 shadow-card p-5";
+const BTN: &str = "rounded-full border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50";
+const PRIMARY_BTN: &str = "rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50";
 
 /// "1 subcategory" / "3 subcategories", so counts read as English.
 fn plural(count: usize, one: &str, many: &str) -> String {
@@ -59,7 +59,7 @@ pub fn ContactCategoriesPage() -> impl IntoView {
                 <Show
                     when=move || can_edit
                     fallback=|| view! {
-                        <p class="rounded-xl border border-slate-800 bg-slate-900 p-5 text-sm text-slate-400">
+                        <p class="rounded-card border border-slate-800 bg-slate-900 shadow-card p-5 text-sm text-slate-400">
                             "Categories and rules are managed by administrators. You can see them on \
                              each contact."
                         </p>
@@ -446,7 +446,7 @@ fn CategoryRow(
                     type="button"
                     on:click=delete.clone()
                     prop:disabled=move || busy.get()
-                    class="rounded-lg border border-rose-500/40 px-3 py-1.5 text-xs font-medium text-rose-300 hover:bg-rose-500/10 disabled:opacity-50"
+                    class="rounded-full border border-rose-500/40 px-3 py-1.5 text-xs font-medium text-rose-300 hover:bg-rose-500/10 disabled:opacity-50"
                 >
                     "Delete"
                 </button>
@@ -627,7 +627,7 @@ fn RulesManager(
                                             type="button"
                                             on:click=move |_| remove(id.clone())
                                             prop:disabled=move || busy.get()
-                                            class="rounded-lg border border-rose-500/40 px-3 py-1.5 text-xs font-medium text-rose-300 hover:bg-rose-500/10 disabled:opacity-50"
+                                            class="rounded-full border border-rose-500/40 px-3 py-1.5 text-xs font-medium text-rose-300 hover:bg-rose-500/10 disabled:opacity-50"
                                         >
                                             "Delete"
                                         </button>

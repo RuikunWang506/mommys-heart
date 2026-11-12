@@ -14,7 +14,7 @@ use crate::server_fns::contacts::search_active_contacts;
 use crate::server_fns::err_text;
 use crate::server_fns::organizations::search_active_organizations;
 
-const INPUT_CLASS: &str = "mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30";
+const INPUT_CLASS: &str = "mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30";
 
 #[component]
 pub fn CaseQuestionnaires(
@@ -130,7 +130,7 @@ pub fn CaseQuestionnaires(
                         "Review or update previously submitted intake answers."
                     </p>
                 </div>
-                <div class="space-y-4 rounded-xl border border-slate-800 bg-slate-900 p-4">
+                <div class="space-y-4 rounded-card border border-slate-800 bg-slate-900 shadow-card p-4">
                     {completed_views}
                 </div>
             </section>
@@ -158,7 +158,7 @@ pub fn CaseQuestionnaires(
                         {format!("{active_count} active")}
                     </span>
                 </div>
-                <div class="rounded-xl border border-amber-500/30 bg-slate-900 p-4">
+                <div class="rounded-card border border-amber-500/30 bg-slate-900 shadow-card p-4">
                     {active_tasks}
                 </div>
             </section>
@@ -168,16 +168,13 @@ pub fn CaseQuestionnaires(
     }
 }
 
-#[component]
-pub fn CaseIntakeTaskSummary(case_id: String, properties: Vec<CaseProperty>) -> impl IntoView {
-    let general_complete = is_complete(&properties, &GENERAL_QUESTIONNAIRE);
-    let followups = required_followups(&properties);
-    let active_followups = followups
-        .iter()
-        .filter(|required| !is_complete(&properties, required.questionnaire))
-        .count();
+pub fn intake_status(properties: &[CaseProperty]) -> (usize, String) {
+    let general_complete = is_complete(properties, &GENERAL_QUESTIONNAIRE);
     let active_count = if general_complete {
-        active_followups
+        required_followups(properties)
+            .iter()
+            .filter(|required| !is_complete(properties, required.questionnaire))
+            .count()
     } else {
         1
     };
@@ -190,6 +187,12 @@ pub fn CaseIntakeTaskSummary(case_id: String, properties: Vec<CaseProperty>) -> 
     } else {
         format!("{active_count} follow-up questionnaires need attention.")
     };
+    (active_count, summary)
+}
+
+#[component]
+pub fn CaseIntakeTaskSummary(case_id: String, properties: Vec<CaseProperty>) -> impl IntoView {
+    let (active_count, summary) = intake_status(&properties);
     let href = format!("/cases/{case_id}/intake");
 
     view! {
@@ -198,7 +201,7 @@ pub fn CaseIntakeTaskSummary(case_id: String, properties: Vec<CaseProperty>) -> 
                 <h2 class="text-lg font-semibold text-slate-100">"Active tasks"</h2>
                 <p class="mt-1 text-sm text-slate-500">"Work that needs attention on this case."</p>
             </div>
-            <div class="rounded-xl border border-amber-500/30 bg-slate-900 p-4">
+            <div class="rounded-card border border-amber-500/30 bg-slate-900 shadow-card p-4">
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <div class="flex flex-wrap items-center gap-2">
@@ -219,7 +222,7 @@ pub fn CaseIntakeTaskSummary(case_id: String, properties: Vec<CaseProperty>) -> 
                     </div>
                     <A
                         href=href
-                        attr:class="shrink-0 rounded-lg bg-primary-500 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-primary-600"
+                        attr:class="shrink-0 rounded-full bg-primary-500 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-primary-600"
                     >
                         "Open intake"
                     </A>
@@ -354,7 +357,7 @@ fn questionnaire_card(
                         <button
                             type="button"
                             on:click=move |_| expanded.update(|open| *open = !*open)
-                            class="shrink-0 rounded-lg border border-slate-700 px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800"
+                            class="shrink-0 rounded-full border border-slate-700 px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800"
                         >
                             {move || if expanded.get() { "Close" } else { "Edit answers" }}
                         </button>
@@ -386,7 +389,7 @@ fn questionnaire_card(
                 <button
                     type="submit"
                     prop:disabled=move || pending.get()
-                    class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-60"
+                    class="rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                     {move || if pending.get() { "Saving\u{2026}" } else { "Submit questionnaire" }}
                 </button>
@@ -571,7 +574,7 @@ fn DirectoryLookup(
                 <ul
                     data-directory-results
                     tabindex="-1"
-                    class="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-lg border border-slate-700 bg-slate-950 py-1 shadow-lg"
+                    class="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-xl border border-slate-700 bg-slate-900 py-1 shadow-lg"
                 >
                     {move || {
                         results

@@ -21,9 +21,9 @@ use crate::server_fns::reports::{
 };
 use crate::state::AppState;
 
-const PANEL: &str = "rounded-xl border border-slate-800 bg-slate-900 p-5";
+const PANEL: &str = "rounded-card border border-slate-800 bg-slate-900 shadow-card p-5";
 const INPUT: &str =
-    "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:border-primary-500 focus:outline-none";
+    "w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:border-primary-500 focus:outline-none";
 
 /// Starting points, so the first use of the page is not a blank box.
 const EXAMPLES: &[&str] = &[
@@ -163,7 +163,7 @@ fn SavedReportList() -> impl IntoView {
                     </div>
                     <A
                         href="/reports/new"
-                        attr:class="shrink-0 rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-400"
+                        attr:class="shrink-0 rounded-full bg-primary-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-400"
                     >
                         "New report"
                     </A>
@@ -208,7 +208,7 @@ fn SavedReportList() -> impl IntoView {
                         <button
                             type="button"
                             on:click=move |_| window.update(|value| *value += 25)
-                            class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-800"
+                            class="rounded-full border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-800"
                         >
                             "Load more reports"
                         </button>
@@ -301,13 +301,13 @@ fn SavedReportDetail(report_id: String) -> impl IntoView {
                         <button
                             on:click=move |_| run()
                             disabled=move || busy.get()
-                            class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-400 disabled:cursor-not-allowed disabled:opacity-60"
+                            class="rounded-full bg-primary-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-400 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             {move || if busy.get() { "Running\u{2026}" } else { "Run again" }}
                         </button>
                         <button
                             on:click=remove
-                            class="rounded-lg border border-rose-500/40 px-4 py-2 text-sm font-medium text-rose-300 transition-colors hover:bg-rose-500/10"
+                            class="rounded-full border border-rose-500/40 px-4 py-2 text-sm font-medium text-rose-300 transition-colors hover:bg-rose-500/10"
                         >
                             "Delete"
                         </button>
@@ -394,7 +394,7 @@ fn ReportsWorkspace() -> impl IntoView {
                     rows="3"
                     maxlength=MAX_REQUEST_CHARS.to_string()
                     placeholder="e.g. Total funding received per month this year, as a line chart"
-                    class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40 disabled:cursor-not-allowed disabled:opacity-50"
+                    class="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40 disabled:cursor-not-allowed disabled:opacity-50"
                     prop:value=move || request.get()
                     on:input=move |event| request.set(event_target_value(&event))
                     on:keydown=on_keydown
@@ -405,7 +405,7 @@ fn ReportsWorkspace() -> impl IntoView {
                     <button
                         on:click=move |_| run()
                         disabled=move || busy.get()
-                        class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-400 disabled:cursor-not-allowed disabled:opacity-60"
+                        class="rounded-full bg-primary-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-400 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         {move || if busy.get() { "Building\u{2026}" } else { "Build report" }}
                     </button>
@@ -522,7 +522,7 @@ fn SaveReportPanel(report: Report, request: String) -> impl IntoView {
                 <button
                     on:click=save
                     disabled=move || saving.get()
-                    class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-400 disabled:cursor-not-allowed disabled:opacity-60"
+                    class="rounded-full bg-primary-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-400 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                     {move || if saving.get() { "Saving\u{2026}" } else { "Save report" }}
                 </button>
@@ -574,7 +574,7 @@ fn ReportView(report: Report, show_working: RwSignal<bool>) -> impl IntoView {
                     <a
                         href=download_href
                         download=download_name
-                        class="shrink-0 rounded-lg border border-primary-500/40 bg-primary-500/10 px-4 py-2 text-sm font-medium text-primary-300 transition-colors hover:bg-primary-500/20"
+                        class="shrink-0 rounded-full border border-primary-500/40 bg-primary-500/10 px-4 py-2 text-sm font-medium text-primary-300 transition-colors hover:bg-primary-500/20"
                     >
                         "Export to CSV"
                     </a>
@@ -660,7 +660,7 @@ fn ResultTable(table: crate::server_fns::reports::ReportTable) -> impl IntoView 
     let numeric: Vec<bool> = table.columns.iter().map(|c| c.numeric).collect();
 
     view! {
-        <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900">
+        <div class="overflow-x-auto rounded-card border border-slate-800 bg-slate-900 shadow-card">
             <table class="min-w-full text-sm">
                 <thead class="border-b border-slate-800 bg-slate-900/60">
                     <tr>

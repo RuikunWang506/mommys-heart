@@ -129,7 +129,7 @@ pub fn ManageUsers(
             }
             if loading.get() {
                 return view! {
-                    <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
+                    <div class="rounded-card border border-slate-800 bg-slate-900 shadow-card p-4">
                         <Loading label="Loading user details…" />
                     </div>
                 }
@@ -154,13 +154,13 @@ pub fn ManageUsers(
                 <div class="flex flex-wrap gap-2">
                     <A
                         href=back_href
-                        attr:class="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
+                        attr:class="inline-flex items-center gap-1.5 rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
                     >
                         "← Back to users"
                     </A>
                     <A
                         href=profile_href
-                        attr:class="inline-flex items-center rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
+                        attr:class="inline-flex items-center rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
                     >
                         "View profile"
                     </A>
@@ -380,7 +380,7 @@ pub fn ManageUsers(
                     <input
                         id="admin-user-search"
                         type="search"
-                        class="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40"
+                        class="mt-2 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40"
                         placeholder="Name, email, or user ID"
                         prop:value=move || query.get()
                         on:input=move |event| {
@@ -535,13 +535,13 @@ fn UserDirectorySection(
                             <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
                                 <A
                                     href=profile_href
-                                    attr:class="inline-flex items-center justify-center rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
+                                    attr:class="inline-flex items-center justify-center rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
                                 >
                                     "View profile"
                                 </A>
                                 <A
                                     href=manage_href
-                                    attr:class="inline-flex items-center justify-center rounded-lg border border-primary-500/40 bg-primary-500/10 px-3 py-1.5 text-sm font-medium text-primary-300 hover:bg-primary-500/20"
+                                    attr:class="inline-flex items-center justify-center rounded-full border border-primary-500/40 bg-primary-500/10 px-3 py-1.5 text-sm font-medium text-primary-300 hover:bg-primary-500/20"
                                 >
                                     "Manage"
                                 </A>
@@ -570,7 +570,7 @@ fn UserDirectorySection(
                             window.update(|value| *value = (*value + PAGE_SIZE).min(MAX_WINDOW))
                         }
                         prop:disabled=move || loading.get()
-                        class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800 disabled:opacity-50"
+                        class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800 disabled:opacity-50"
                     >
                         {move || if loading.get() { "Loading…" } else { "Load more" }}
                     </button>
@@ -584,7 +584,7 @@ fn UserDirectorySection(
     };
 
     view! {
-        <section class="rounded-xl border border-slate-800 bg-slate-900 p-5">
+        <section class="rounded-card border border-slate-800 bg-slate-900 shadow-card p-5">
             <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
                 <div>
                     <div class="flex flex-wrap items-center gap-2">
