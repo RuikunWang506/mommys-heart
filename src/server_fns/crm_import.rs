@@ -194,6 +194,7 @@ impl CoreField {
                 "tel",
                 "contact phone",
                 "contact phone number",
+                "contact phone (number)",
             ],
             Self::Mobile => &["mobile", "mobile phone", "cell", "cell phone", "cellphone"],
             Self::Address => &[
@@ -204,6 +205,7 @@ impl CoreField {
                 "physical address",
                 "office address",
                 "physical office address",
+                "physical (office) address",
             ],
             Self::JobTitle => &[
                 "job title",
@@ -852,7 +854,15 @@ pub fn classify_column(
     if let Some(field) = CoreField::match_header(subject, header) {
         return (ColumnTarget::Core { field }, MatchKind::CoreField, Vec::new());
     }
+    classify_property_column(subject, header, known)
+}
 
+/// Like [`classify_column`], but only considers properties, never a core field.
+pub fn classify_property_column(
+    subject: PropertySubject,
+    header: &str,
+    known: &[PropertySuggestion],
+) -> (ColumnTarget, MatchKind, Vec<PropertySuggestion>) {
     let normalized_header = normalize_property_part(header);
 
     // An exact name match is the property, whatever its section.

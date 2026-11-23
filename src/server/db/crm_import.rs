@@ -20,9 +20,9 @@ use crate::server::sheets::Sheet;
 use crate::server_fns::contact_properties::MAX_PROPERTIES;
 use crate::server_fns::contacts::{ContactInput, ContactType};
 use crate::server_fns::crm_import::{
-    classify_column, describe_target, ColumnPlan, ColumnTarget, CoreField, ImportPlan,
-    ImportPolicy, ImportPreview, ImportRowFailure, ImportTask, ImportTaskStatus, MatchAction,
-    PropertySuggestion, SAMPLE_ROWS, SAMPLE_VALUES,
+    classify_column, classify_property_column, describe_target, ColumnPlan, ColumnTarget,
+    CoreField, ImportPlan, ImportPolicy, ImportPreview, ImportRowFailure, ImportTask,
+    ImportTaskStatus, MatchAction, PropertySuggestion, SAMPLE_ROWS, SAMPLE_VALUES,
 };
 use crate::server_fns::organizations::{OrganizationInput, OrganizationKind};
 use crate::server_fns::property_filters::PropertySubject;
@@ -81,7 +81,7 @@ pub async fn stage_and_describe(
 ) -> Result<ImportPreview, sqlx::Error> {
     let known = known_properties(subject).await?;
 
-    let columns = sheet
+    let mut columns: Vec<ColumnPlan> = sheet
         .headers
         .iter()
         .enumerate()
@@ -98,6 +98,31 @@ pub async fn stage_and_describe(
             }
         })
         .collect();
+
+    // With First/Last name columns present, a "Name" column is left for the user to place.
+    let has_split_name = columns.iter().any(|column| {
+        matches!(
+            column.target,
+            ColumnTarget::Core {
+                field: CoreField::FirstName | CoreField::LastName
+            }
+        )
+    });
+    if has_split_name {
+        for column in columns.iter_mut().filter(|column| {
+            column.target
+                == ColumnTarget::Core {
+                    field: CoreField::FullName,
+                }
+        }) {
+            let (target, match_kind, suggestions) =
+                classify_property_column(subject, &column.header, &known);
+            column.note = describe_target(subject, &target, &known);
+            column.target = target;
+            column.match_kind = match_kind;
+            column.suggestions = suggestions;
+        }
+    }
 
     let id = ids::opaque("imp");
     sqlx::query(
@@ -1039,11 +1064,17 @@ pub async fn import_row(
 
 /// Split a whole name into `(first, last)`, borrowing from the cell.
 ///
-/// "Last, First" (with a comma) is read surname-first; otherwise the last word
-/// is the surname and everything before it the first name. A single word is
-/// treated as the surname, since a person record needs one.
+/// Trailing suffixes (Jr., PhD) are dropped. "Last, First" is read surname-first;
+/// otherwise the last word is the surname. A single word is the surname.
 fn split_full_name(value: &str) -> (&str, &str) {
-    let value = value.trim();
+    let mut value = value.trim_matches(|c: char| c == ',' || c.is_whitespace());
+    while let Some(cut) = value.rfind(|c: char| c == ',' || c.is_whitespace()) {
+        let (rest, word) = value.split_at(cut);
+        if !is_name_suffix(&word[word.chars().next().map_or(0, char::len_utf8)..]) {
+            break;
+        }
+        value = rest.trim_end_matches(|c: char| c == ',' || c.is_whitespace());
+    }
     if let Some((last, first)) = value.split_once(',') {
         let (first, last) = (first.trim(), last.trim());
         if !first.is_empty() && !last.is_empty() {
@@ -1054,6 +1085,16 @@ fn split_full_name(value: &str) -> (&str, &str) {
         Some((first, last)) => (first.trim(), last.trim()),
         None => ("", value),
     }
+}
+
+/// Generational suffixes and credentials that follow a name.
+fn is_name_suffix(word: &str) -> bool {
+    const SUFFIXES: &[&str] = &[
+        "jr", "sr", "ii", "iii", "iv", "phd", "md", "dds", "esq", "rn", "lmsw", "lcsw", "lmhc",
+        "mba", "mph", "msw", "cpa",
+    ];
+    let word: String = word.chars().filter(|c| *c != '.').collect();
+    SUFFIXES.contains(&word.to_ascii_lowercase().as_str())
 }
 
 /// A short human label for a row, so a failure can be found in the file.
