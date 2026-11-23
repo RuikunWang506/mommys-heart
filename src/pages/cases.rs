@@ -3,6 +3,7 @@ use leptos::task::spawn_local;
 use leptos_router::components::A;
 use leptos_router::hooks::use_navigate;
 
+use crate::components::case_number::CaseNumber;
 use crate::components::case_overview::CaseOverview;
 use crate::components::case_questionnaires::{intake_status, CaseIntakeTaskSummary};
 use crate::components::case_tabs::{CaseTab, CaseTabBar};
@@ -292,6 +293,7 @@ pub fn CaseHomePage() -> impl IntoView {
                     let inactive = c.inactive;
                     let status = c.status;
                     let name = c.name.clone();
+                    let number = c.id.clone();
                     let select = {
                         let case_id = case_id.clone();
                         move |_| {
@@ -313,9 +315,12 @@ pub fn CaseHomePage() -> impl IntoView {
                             }
                         }
                     >
-                        <span class=move || {
-                            if is_selected.get() { "block truncate font-bold" } else { "block truncate font-semibold" }
-                        }>{name}</span>
+                        <span class="flex items-baseline justify-between gap-2">
+                            <span class=move || {
+                                if is_selected.get() { "min-w-0 truncate font-bold" } else { "min-w-0 truncate font-semibold" }
+                            }>{name}</span>
+                            <CaseNumber id=number />
+                        </span>
                         <span class="mt-1.5 flex items-center gap-2">
                             {status_pill(status)}
                             <span class="min-w-0 truncate text-sm text-slate-500" title=owner_title>{owner}</span>
@@ -1843,6 +1848,7 @@ pub fn CaseDetail(
                         <div class="min-w-0">
                             <p class="flex flex-wrap items-center gap-2">
                                 {status_pill(status)}
+                                <CaseNumber id=c.id.clone() />
                                 <span class="text-sm text-slate-500">
                                     "Filed by "
                                     <ProfileLink user_id=c.owner_id.clone() name=owner_name />

@@ -3,6 +3,7 @@ use leptos::task::spawn_local;
 use leptos_router::components::A;
 use leptos_router::hooks::use_params_map;
 
+use crate::components::case_number::CaseNumber;
 use crate::components::case_questionnaires::CaseQuestionnaires;
 use crate::components::guard::require_login;
 use crate::components::layout::Layout;
@@ -84,6 +85,7 @@ pub fn CaseIntakePage() -> impl IntoView {
                                             <h1 class="mt-1 text-2xl font-semibold text-slate-100">
                                                 {case.name.clone()}
                                             </h1>
+                                            <p class="mt-1"><CaseNumber id=case.id.clone() /></p>
                                             <p class="mt-1 text-sm text-slate-400">
                                                 "Complete active questionnaires and review prior intake answers."
                                             </p>

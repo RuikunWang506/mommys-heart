@@ -129,8 +129,9 @@ pub fn InboxPage() -> impl IntoView {
             }
         }
 
-        // Display title for a case: the case name with its owner appended.
-        let title_for = move |c: &CaseSummary| format!("{} · {}", c.name, c.owner_full_name());
+        // Display title for a case: the case name and number, with its owner appended.
+        let title_for =
+            move |c: &CaseSummary| format!("{} ({}) · {}", c.name, c.id, c.owner_full_name());
 
         let case_list = move || {
             if let Some(msg) = load_error.get() {

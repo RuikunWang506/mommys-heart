@@ -4,6 +4,7 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_router::components::A;
 
+use crate::components::case_number::CaseNumber;
 use crate::server_fns::cases::{
     list_pending_case_requests, set_case_review_decision, CaseStatus, CaseSummary,
 };
@@ -120,7 +121,10 @@ fn CaseRequestCard(case: CaseSummary, reload: RwSignal<u32>) -> impl IntoView {
     view! {
         <div class="rounded-card border border-slate-800 bg-slate-900 shadow-card p-4">
             <div class="flex flex-wrap items-center justify-between gap-2">
-                <span class="min-w-0 truncate font-medium text-slate-100">{case.name.clone()}</span>
+                <span class="flex min-w-0 items-baseline gap-2">
+                    <span class="min-w-0 truncate font-medium text-slate-100">{case.name.clone()}</span>
+                    <CaseNumber id=case.id.clone() />
+                </span>
                 <span class=format!(
                     "rounded-full px-2 py-0.5 text-xs font-medium {}",
                     CaseStatus::PendingReview.badge_classes(),
