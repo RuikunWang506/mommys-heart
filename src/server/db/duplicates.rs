@@ -2,7 +2,7 @@
 //! same name, and groups of contacts that share a name, email, or phone number.
 //! Read-only; nothing here changes a record.
 
-use std::collections::{BTreeSet, HashMap};
+use std::collections::{BTreeSet, HashMap, HashSet};
 
 use crate::server::db::pool;
 use crate::server_fns::cases::CaseStatus;
@@ -24,11 +24,8 @@ fn name_key(column: &str) -> String {
     format!("lower(regexp_replace(btrim({column}), '\\s+', ' ', 'g'))")
 }
 
-/// Groups of two or more cases whose names match, at most `max_groups` of them,
-/// and whether more groups existed than were returned.
-pub async fn case_groups(
-    max_groups: usize,
-) -> Result<(Vec<DuplicateCaseGroup>, bool), sqlx::Error> {
+/// Groups of two or more cases whose names match.
+pub async fn case_groups() -> Result<Vec<DuplicateCaseGroup>, sqlx::Error> {
     let key = name_key("c.name");
     let sql = format!(
         "WITH keyed AS (
@@ -75,7 +72,10 @@ pub async fn case_groups(
     let mut current_key: Option<String> = None;
     for (k, id, name, status, filed_by, clients, note_count, message_count, last_message) in rows {
         if current_key.as_deref() != Some(k.as_str()) {
-            groups.push(DuplicateCaseGroup { cases: Vec::new() });
+            groups.push(DuplicateCaseGroup {
+                cases: Vec::new(),
+                dismissed: false,
+            });
             current_key = Some(k);
         }
         let filed_by = filed_by.filter(|n| !n.is_empty()).unwrap_or_default();
@@ -93,18 +93,14 @@ pub async fn case_groups(
         }
     }
 
-    let truncated = groups.len() > max_groups;
-    groups.truncate(max_groups);
-    Ok((groups, truncated))
+    Ok(groups)
 }
 
 /// Groups of two or more active contacts connected by a shared name, email
 /// address, or phone number (any of a contact's phone or mobile, compared by
 /// their last ten digits). Contacts linked through a chain of matches land in
 /// one group, with every reason that linked them.
-pub async fn contact_groups(
-    max_groups: usize,
-) -> Result<(Vec<DuplicateContactGroup>, bool), sqlx::Error> {
+pub async fn contact_groups() -> Result<Vec<DuplicateContactGroup>, sqlx::Error> {
     // A contact linked to an account takes its name, email and phone from the
     // account, as the contact directory shows it, so compare those values.
     let key = name_key(&format!("concat_ws(' ', {FIRST}, {LAST})"));
@@ -133,7 +129,7 @@ pub async fn contact_groups(
     );
     let matches: Vec<(String, String, String)> = sqlx::query_as(&sql).fetch_all(pool()).await?;
     if matches.is_empty() {
-        return Ok((Vec::new(), false));
+        return Ok(Vec::new());
     }
 
     // Union-find over contact ids, so A~B (same email) and B~C (same phone)
@@ -210,6 +206,7 @@ pub async fn contact_groups(
             DuplicateContactGroup {
                 reasons: reasons.into_iter().collect(),
                 contacts,
+                dismissed: false,
             }
         })
         .filter(|group| group.contacts.len() > 1)
@@ -224,9 +221,7 @@ pub async fn contact_groups(
         first(a).cmp(&first(b))
     });
 
-    let truncated = groups.len() > max_groups;
-    groups.truncate(max_groups);
-    Ok((groups, truncated))
+    Ok(groups)
 }
 
 /// Display details for the given contacts, keyed by id.
@@ -298,4 +293,46 @@ async fn contact_details(ids: &[String]) -> Result<HashMap<String, DuplicateCont
             },
         )
         .collect())
+}
+
+/// The id sets marked "not duplicates" for one kind (`"case"` or `"contact"`),
+/// each sorted.
+pub async fn dismissed_sets(kind: &str) -> Result<HashSet<Vec<String>>, sqlx::Error> {
+    let rows: Vec<(Vec<String>,)> =
+        sqlx::query_as("SELECT record_ids FROM duplicate_dismissals WHERE kind = $1")
+            .bind(kind)
+            .fetch_all(pool())
+            .await?;
+    Ok(rows.into_iter().map(|(ids,)| ids).collect())
+}
+
+/// Mark a group as not duplicates. `ids` must already be sorted and unique.
+pub async fn dismiss(
+    kind: &str,
+    ids: &[String],
+    actor_id: &str,
+    actor_name: &str,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "INSERT INTO duplicate_dismissals (kind, record_ids, dismissed_by_id, dismissed_by_name)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (kind, record_ids) DO NOTHING",
+    )
+    .bind(kind)
+    .bind(ids)
+    .bind(actor_id)
+    .bind(actor_name)
+    .execute(pool())
+    .await?;
+    Ok(())
+}
+
+/// Undo [`dismiss`], so the group is listed again.
+pub async fn undismiss(kind: &str, ids: &[String]) -> Result<(), sqlx::Error> {
+    sqlx::query("DELETE FROM duplicate_dismissals WHERE kind = $1 AND record_ids = $2")
+        .bind(kind)
+        .bind(ids)
+        .execute(pool())
+        .await?;
+    Ok(())
 }

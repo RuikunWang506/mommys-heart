@@ -12,7 +12,8 @@ use leptos_router::components::A;
 use crate::components::loading::Loading;
 use crate::helpers::format::badge_pill;
 use crate::server_fns::duplicates::{
-    possible_duplicates, DuplicateCase, DuplicateContact, DuplicateReport, MAX_GROUPS,
+    possible_duplicates, set_duplicate_dismissed, DuplicateCase, DuplicateContact, DuplicateKind,
+    DuplicateReport, MAX_GROUPS,
 };
 use crate::server_fns::err_text;
 
@@ -29,18 +30,34 @@ pub fn PossibleDuplicates() -> impl IntoView {
     let report = RwSignal::new(None::<DuplicateReport>);
     let loading = RwSignal::new(false);
     let error = RwSignal::new(String::new());
+    let show_dismissed = RwSignal::new(false);
 
-    let run = move |_| {
+    let load = move || {
         loading.set(true);
         error.set(String::new());
+        let include_dismissed = show_dismissed.get_untracked();
         spawn_local(async move {
-            match possible_duplicates().await {
+            match possible_duplicates(include_dismissed).await {
                 Ok(found) => report.set(Some(found)),
                 Err(e) => error.set(err_text(e)),
             }
             loading.set(false);
         });
     };
+    let run = move |_| load();
+
+    // Mark or unmark a group, then reload so the lists and counts stay true.
+    let set_dismissed = Callback::new(
+        move |(kind, ids, dismissed): (DuplicateKind, Vec<String>, bool)| {
+            error.set(String::new());
+            spawn_local(async move {
+                match set_duplicate_dismissed(kind, ids, dismissed).await {
+                    Ok(()) => load(),
+                    Err(e) => error.set(err_text(e)),
+                }
+            });
+        },
+    );
 
     let results = move || {
         if loading.get() {
@@ -49,10 +66,28 @@ pub fn PossibleDuplicates() -> impl IntoView {
         let Some(found) = report.get() else {
             return ().into_any();
         };
+        let hidden = found.dismissed_case_groups + found.dismissed_contact_groups;
         view! {
             <div class="space-y-8">
-                <CaseGroups found=found.clone() />
-                <ContactGroups found=found />
+                {(hidden > 0).then(|| view! {
+                    <label class="flex items-center gap-2 text-sm text-slate-400">
+                        <input
+                            type="checkbox"
+                            class="h-4 w-4 rounded border-slate-600 bg-slate-950"
+                            prop:checked=move || show_dismissed.get()
+                            on:change=move |event| {
+                                show_dismissed.set(event_target_checked(&event));
+                                load();
+                            }
+                        />
+                        {format!(
+                            "Show {} marked as not duplicates",
+                            plural(hidden as i64, "group", "groups")
+                        )}
+                    </label>
+                })}
+                <CaseGroups found=found.clone() set_dismissed=set_dismissed />
+                <ContactGroups found=found set_dismissed=set_dismissed />
             </div>
         }
         .into_any()
@@ -64,7 +99,7 @@ pub fn PossibleDuplicates() -> impl IntoView {
                 <div>
                     <h2 class="text-base font-semibold text-slate-100">"Possible duplicates"</h2>
                     <p class="mt-1 text-sm text-slate-400">
-                        "Cases with the same name, and contacts that share a name, email, or phone number. Nothing is changed here: open each record, decide which one to keep, then withdraw or archive the extra one."
+                        "Cases with the same name, and contacts that share a name, email, or phone number. Nothing is changed here: open each record, decide which one to keep, then withdraw or archive the extra one. If they are different people, mark the group as not duplicates."
                     </p>
                 </div>
                 <button
@@ -85,7 +120,10 @@ pub fn PossibleDuplicates() -> impl IntoView {
 }
 
 #[component]
-fn CaseGroups(found: DuplicateReport) -> impl IntoView {
+fn CaseGroups(
+    found: DuplicateReport,
+    set_dismissed: Callback<(DuplicateKind, Vec<String>, bool)>,
+) -> impl IntoView {
     let count = found.case_groups.len();
     let heading = if count == 0 {
         "No cases share a name.".to_string()
@@ -107,9 +145,21 @@ fn CaseGroups(found: DuplicateReport) -> impl IntoView {
                 .case_groups
                 .into_iter()
                 .map(|group| {
+                    let ids = group.ids();
+                    let dismissed = group.dismissed;
+                    let label = if dismissed { "Marked as not duplicates" } else { "Same name" };
                     view! {
-                        <div class="divide-y divide-slate-800 rounded-card border border-slate-800 bg-slate-900 shadow-card">
-                            {group.cases.into_iter().map(|case| view! { <CaseRow case=case /> }).collect_view()}
+                        <div class="rounded-card border border-slate-800 bg-slate-900 shadow-card">
+                            <GroupBar
+                                label=label
+                                kind=DuplicateKind::Case
+                                ids=ids
+                                dismissed=dismissed
+                                set_dismissed=set_dismissed
+                            />
+                            <div class="divide-y divide-slate-800">
+                                {group.cases.into_iter().map(|case| view! { <CaseRow case=case /> }).collect_view()}
+                            </div>
                         </div>
                     }
                 })
@@ -157,7 +207,10 @@ fn CaseRow(case: DuplicateCase) -> impl IntoView {
 }
 
 #[component]
-fn ContactGroups(found: DuplicateReport) -> impl IntoView {
+fn ContactGroups(
+    found: DuplicateReport,
+    set_dismissed: Callback<(DuplicateKind, Vec<String>, bool)>,
+) -> impl IntoView {
     if !found.contacts_checked {
         return view! {
             <p class="text-sm text-slate-500">
@@ -193,11 +246,22 @@ fn ContactGroups(found: DuplicateReport) -> impl IntoView {
                         .map(|r| r.label())
                         .collect::<Vec<_>>()
                         .join(" · ");
+                    let ids = group.ids();
+                    let dismissed = group.dismissed;
+                    let label = if dismissed {
+                        format!("Marked as not duplicates ({reasons})")
+                    } else {
+                        reasons
+                    };
                     view! {
                         <div class="rounded-card border border-slate-800 bg-slate-900 shadow-card">
-                            <p class="border-b border-slate-800 px-4 py-2 text-xs font-medium text-slate-400">
-                                {reasons}
-                            </p>
+                            <GroupBar
+                                label=label
+                                kind=DuplicateKind::Contact
+                                ids=ids
+                                dismissed=dismissed
+                                set_dismissed=set_dismissed
+                            />
                             <div class="divide-y divide-slate-800">
                                 {group
                                     .contacts
@@ -254,6 +318,43 @@ fn ContactRow(contact: DuplicateContact) -> impl IntoView {
                     .then(|| view! { <p class="mt-1 truncate text-sm text-slate-400">{reach}</p> })}
             </div>
             <p class="shrink-0 text-xs text-slate-500 sm:text-right">{summary}</p>
+        </div>
+    }
+}
+
+/// A group's header: why it was grouped, and the button that marks it as not
+/// duplicates (or lists it again).
+#[component]
+fn GroupBar(
+    #[prop(into)] label: String,
+    kind: DuplicateKind,
+    ids: Vec<String>,
+    dismissed: bool,
+    set_dismissed: Callback<(DuplicateKind, Vec<String>, bool)>,
+) -> impl IntoView {
+    let ids = StoredValue::new(ids);
+    let (text, title) = if dismissed {
+        (
+            "List again",
+            "Show this group in the possible duplicates again",
+        )
+    } else {
+        (
+            "Not duplicates",
+            "These are different records. Hide this group until another matching record appears.",
+        )
+    };
+    view! {
+        <div class="flex items-center justify-between gap-3 border-b border-slate-800 px-4 py-2">
+            <p class="text-xs font-medium text-slate-400">{label}</p>
+            <button
+                type="button"
+                title=title
+                on:click=move |_| set_dismissed.run((kind, ids.get_value(), !dismissed))
+                class="shrink-0 rounded-full border border-slate-700 px-2.5 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800"
+            >
+                {text}
+            </button>
         </div>
     }
 }
