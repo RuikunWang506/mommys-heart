@@ -321,6 +321,9 @@ fn DirectoryContactEditor(
 pub(crate) fn ContactOutreachPanel(
     contact_id: String,
     contact_changed: Callback<()>,
+    /// Receives the contact's category labels whenever they load or change.
+    #[prop(optional)]
+    on_categories: Option<Callback<Vec<String>>>,
 ) -> impl IntoView {
     let id = StoredValue::new(contact_id);
     let state = expect_context::<AppState>();
@@ -379,6 +382,10 @@ pub(crate) fn ContactOutreachPanel(
                 }
                 Err(err) => {
                     error.try_set(err_text(err));
+                    // Don't leave a previous load's labels showing.
+                    if let Some(report) = on_categories {
+                        report.run(Vec::new());
+                    }
                 }
             }
             if categories
@@ -391,6 +398,18 @@ pub(crate) fn ContactOutreachPanel(
             }
         });
     });
+
+    if let Some(report) = on_categories {
+        Effect::new(move |_| {
+            if let Some(labels) = details.with(|found| {
+                found
+                    .as_ref()
+                    .map(|found| found.contact.categories.iter().map(|c| c.label()).collect())
+            }) {
+                report.run(labels);
+            }
+        });
+    }
 
     // Which rule groups this contact falls under, tracking the live selection
     // so ticking a location updates the advisory note without a save.
@@ -448,6 +467,7 @@ pub(crate) fn ContactOutreachPanel(
                     details.set(Some(found));
                     editing_categories.set(false);
                     reload.update(|value| *value += 1);
+                    contact_changed.run(());
                 }
                 Err(err) => error.set(err_text(err)),
             }

@@ -15,7 +15,6 @@ use crate::components::loading::Loading;
 use crate::helpers::format::badge_pill;
 use crate::pages::contacts::ContactOutreachPanel;
 use crate::server_fns::audit::AuditScope;
-use crate::server_fns::contact_directory::get_contact;
 use crate::server_fns::contacts::{
     load_contact, set_contact_account, set_contact_archived, unlinked_accounts, Contact,
 };
@@ -40,7 +39,7 @@ pub fn ContactDetail(contact_id: String) -> impl IntoView {
     let editing = RwSignal::new(false);
     let reload = RwSignal::new(0u32);
     let organizations = RwSignal::new(Vec::<(String, String)>::new());
-    // Shown beside the name so it is clear at a glance how they connect to us.
+    // Filled by the outreach panel, which already loads the categories.
     let category_labels = RwSignal::new(Vec::<String>::new());
 
     Effect::new(move |_| {
@@ -63,18 +62,6 @@ pub fn ContactDetail(contact_id: String) -> impl IntoView {
                 Err(e) => error.set(err_text(e)),
             }
             loading.set(false);
-        });
-        spawn_local(async move {
-            if let Ok(details) = get_contact(id.get_value()).await {
-                category_labels.set(
-                    details
-                        .contact
-                        .categories
-                        .iter()
-                        .map(|c| c.label())
-                        .collect(),
-                );
-            }
         });
     });
 
@@ -185,6 +172,7 @@ pub fn ContactDetail(contact_id: String) -> impl IntoView {
                     <ContactOutreachPanel
                         contact_id=id.get_value()
                         contact_changed=Callback::new(move |()| reload.update(|value| *value += 1))
+                        on_categories=Callback::new(move |labels| category_labels.set(labels))
                     />
 
                     <Show when=move || person.has_account_field_conflict>
