@@ -241,6 +241,28 @@ pub async fn set_duplicate_dismissed(
             "A group needs between 2 and 200 records.",
         ));
     }
+    // Only mark a set that is a current group, so stale or made-up ids leave no row.
+    if dismissed {
+        let current: Vec<Vec<String>> = match kind {
+            DuplicateKind::Case => duplicates::case_groups()
+                .await
+                .map_err(ServerFnError::new)?
+                .iter()
+                .map(|g| normalized_ids(&g.ids()))
+                .collect(),
+            DuplicateKind::Contact => duplicates::contact_groups()
+                .await
+                .map_err(ServerFnError::new)?
+                .iter()
+                .map(|g| normalized_ids(&g.ids()))
+                .collect(),
+        };
+        if !current.contains(&ids) {
+            return Err(ServerFnError::new(
+                "This group has changed; check for duplicates again.",
+            ));
+        }
+    }
     let result = if dismissed {
         duplicates::dismiss(kind.slug(), &ids, &user.id, &user.full_name()).await
     } else {

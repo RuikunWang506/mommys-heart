@@ -31,6 +31,7 @@ pub fn PossibleDuplicates() -> impl IntoView {
     let loading = RwSignal::new(false);
     let error = RwSignal::new(String::new());
     let show_dismissed = RwSignal::new(false);
+    let saving = RwSignal::new(false);
 
     let load = move || {
         loading.set(true);
@@ -49,12 +50,17 @@ pub fn PossibleDuplicates() -> impl IntoView {
     // Mark or unmark a group, then reload so the lists and counts stay true.
     let set_dismissed = Callback::new(
         move |(kind, ids, dismissed): (DuplicateKind, Vec<String>, bool)| {
+            if saving.get_untracked() {
+                return;
+            }
+            saving.set(true);
             error.set(String::new());
             spawn_local(async move {
                 match set_duplicate_dismissed(kind, ids, dismissed).await {
                     Ok(()) => load(),
                     Err(e) => error.set(err_text(e)),
                 }
+                saving.set(false);
             });
         },
     );
@@ -86,8 +92,8 @@ pub fn PossibleDuplicates() -> impl IntoView {
                         )}
                     </label>
                 })}
-                <CaseGroups found=found.clone() set_dismissed=set_dismissed />
-                <ContactGroups found=found set_dismissed=set_dismissed />
+                <CaseGroups found=found.clone() set_dismissed=set_dismissed saving=saving />
+                <ContactGroups found=found set_dismissed=set_dismissed saving=saving />
             </div>
         }
         .into_any()
@@ -123,6 +129,7 @@ pub fn PossibleDuplicates() -> impl IntoView {
 fn CaseGroups(
     found: DuplicateReport,
     set_dismissed: Callback<(DuplicateKind, Vec<String>, bool)>,
+    saving: RwSignal<bool>,
 ) -> impl IntoView {
     let count = found.case_groups.len();
     let heading = if count == 0 {
@@ -156,6 +163,7 @@ fn CaseGroups(
                                 ids=ids
                                 dismissed=dismissed
                                 set_dismissed=set_dismissed
+                                saving=saving
                             />
                             <div class="divide-y divide-slate-800">
                                 {group.cases.into_iter().map(|case| view! { <CaseRow case=case /> }).collect_view()}
@@ -210,6 +218,7 @@ fn CaseRow(case: DuplicateCase) -> impl IntoView {
 fn ContactGroups(
     found: DuplicateReport,
     set_dismissed: Callback<(DuplicateKind, Vec<String>, bool)>,
+    saving: RwSignal<bool>,
 ) -> impl IntoView {
     if !found.contacts_checked {
         return view! {
@@ -261,6 +270,7 @@ fn ContactGroups(
                                 ids=ids
                                 dismissed=dismissed
                                 set_dismissed=set_dismissed
+                                saving=saving
                             />
                             <div class="divide-y divide-slate-800">
                                 {group
@@ -331,6 +341,7 @@ fn GroupBar(
     ids: Vec<String>,
     dismissed: bool,
     set_dismissed: Callback<(DuplicateKind, Vec<String>, bool)>,
+    saving: RwSignal<bool>,
 ) -> impl IntoView {
     let ids = StoredValue::new(ids);
     let (text, title) = if dismissed {
@@ -351,7 +362,8 @@ fn GroupBar(
                 type="button"
                 title=title
                 on:click=move |_| set_dismissed.run((kind, ids.get_value(), !dismissed))
-                class="shrink-0 rounded-full border border-slate-700 px-2.5 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800"
+                prop:disabled=move || saving.get()
+                class="shrink-0 rounded-full border border-slate-700 px-2.5 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50"
             >
                 {text}
             </button>
