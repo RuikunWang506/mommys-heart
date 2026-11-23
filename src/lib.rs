@@ -36,6 +36,7 @@ pub mod components {
     pub mod layout;
     pub mod loading;
     pub mod organization_properties;
+    pub mod possible_duplicates;
     pub mod profile_link;
     pub mod property_filters;
     pub mod property_rows;

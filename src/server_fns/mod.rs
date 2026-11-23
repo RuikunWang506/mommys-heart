@@ -36,6 +36,7 @@ pub mod contacts;
 pub mod crm;
 pub mod crm_import;
 pub mod documents;
+pub mod duplicates;
 pub mod email_failures;
 pub mod funding;
 pub mod grants;

@@ -9,6 +9,7 @@ use crate::components::admin_cases::CaseRequests;
 use crate::components::admin_requests::AdminRequestCenter;
 use crate::components::case_tabs::CaseTab;
 use crate::components::loading::Loading;
+use crate::components::possible_duplicates::PossibleDuplicates;
 use crate::pages::cases::CaseDetail;
 use crate::server_fns::admin_requests::AdminRequestKind;
 use crate::server_fns::capabilities::CaseCapability;
@@ -375,6 +376,8 @@ pub fn ManageCases(
                 </div>
                 <CaseRequests reload=reload />
             </section>
+
+            <PossibleDuplicates />
 
             <section class="space-y-4 border-t border-slate-800 pt-8">
                 <div>
