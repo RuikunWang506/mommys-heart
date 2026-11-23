@@ -10,6 +10,7 @@
 //! [`router`] merges them into one router.
 
 pub mod chat;
+pub mod contact_export;
 pub mod cors;
 pub mod docs;
 pub mod health;

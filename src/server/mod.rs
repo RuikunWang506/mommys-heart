@@ -22,3 +22,4 @@ pub mod sharepoint;
 pub mod sheets;
 pub mod telemetry;
 pub mod volunteer_agreement_pdf;
+pub mod xlsx;

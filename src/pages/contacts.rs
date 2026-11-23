@@ -865,8 +865,9 @@ fn ContactsDirectory() -> impl IntoView {
 
     // Mirror the applied filters into the URL so the view can be linked to.
     // `replace` keeps filter tweaks out of the back-button history.
-    let navigate = use_navigate();
-    Effect::new(move |previous: Option<()>| {
+    // The applied filters as a query string (without the `?`). The Excel export
+    // reads the same parameters, so its link always matches the list on screen.
+    let filter_query = Memo::new(move |_| {
         let mut parts = Vec::<String>::new();
         let mut push = |key: &str, value: String| {
             if !value.is_empty() {
@@ -881,12 +882,26 @@ fn ContactsDirectory() -> impl IntoView {
         if include_archived.get() {
             parts.push("archived=1".to_string());
         }
+        parts.join("&")
+    });
+    let export_href = move || {
+        let query = filter_query.get();
+        if query.is_empty() {
+            "/api/contacts/export.xlsx".to_string()
+        } else {
+            format!("/api/contacts/export.xlsx?{query}")
+        }
+    };
+
+    let navigate = use_navigate();
+    Effect::new(move |previous: Option<()>| {
+        let query = filter_query.get();
         // Skip the first run: it would only rewrite the URL we just read.
         if previous.is_some() {
-            let target = if parts.is_empty() {
+            let target = if query.is_empty() {
                 "/contacts".to_string()
             } else {
-                format!("/contacts?{}", parts.join("&"))
+                format!("/contacts?{query}")
             };
             navigate(
                 &target,
@@ -1104,6 +1119,16 @@ fn ContactsDirectory() -> impl IntoView {
                             "Send mail"
                         </A>
                     </Show>
+                    // A plain link, not the router's <A>: the browser downloads the file.
+                    <a
+                        href=export_href
+                        download
+                        rel="external"
+                        title="Download the contacts matching the current search and filters"
+                        class="rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800"
+                    >
+                        "Export to Excel"
+                    </a>
                     <A
                         href="/contacts/new"
                         attr:class="rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600"
