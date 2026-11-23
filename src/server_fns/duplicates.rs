@@ -109,7 +109,7 @@ pub async fn possible_duplicates() -> Result<DuplicateReport, ServerFnError> {
         .await
         .map_err(ServerFnError::new)?;
 
-    let contacts_checked = user.role.is_site_admin() || has_information_management_access(&user);
+    let contacts_checked = has_information_management_access(&user);
     let (contact_groups, contact_groups_truncated) = if contacts_checked {
         duplicates::contact_groups(MAX_GROUPS)
             .await

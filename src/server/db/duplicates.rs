@@ -40,12 +40,13 @@ pub async fn case_groups(
          SELECT keyed.k, c.id, c.name, c.status,
                 btrim(concat_ws(' ', u.first_name, u.last_name)) AS filed_by,
                 COALESCE((
-                    SELECT string_agg(btrim(concat_ws(' ', ct.first_name, ct.last_name)), ', '
-                                      ORDER BY ct.last_name, ct.first_name)
+                    SELECT array_agg(btrim(concat_ws(' ', ct.first_name, ct.last_name))
+                                     ORDER BY ct.last_name, ct.first_name)
+                           FILTER (WHERE btrim(concat_ws(' ', ct.first_name, ct.last_name)) <> '')
                     FROM case_contacts cc
                     JOIN contacts ct ON ct.id = cc.contact_id
                     WHERE cc.case_id = c.id AND cc.role = 'client'
-                ), '') AS clients,
+                ), '{{}}'::text[]) AS clients,
                 (SELECT count(*) FROM case_notes n
                   WHERE n.case_id = c.id AND n.state <> 'discarded') AS note_count,
                 (SELECT count(*) FROM messages m WHERE m.case_id = c.id) AS message_count,
@@ -63,7 +64,7 @@ pub async fn case_groups(
         String,
         String,
         Option<String>,
-        String,
+        Vec<String>,
         i64,
         i64,
         Option<String>,
@@ -78,12 +79,6 @@ pub async fn case_groups(
             current_key = Some(k);
         }
         let filed_by = filed_by.filter(|n| !n.is_empty()).unwrap_or_default();
-        let clients = clients
-            .split(", ")
-            .map(str::trim)
-            .filter(|c| !c.is_empty())
-            .map(str::to_string)
-            .collect();
         if let Some(group) = groups.last_mut() {
             group.cases.push(DuplicateCase {
                 id,
