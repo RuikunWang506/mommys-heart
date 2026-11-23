@@ -122,6 +122,7 @@ pub async fn stage_and_describe(
         sheet_name: sheet.sheet_name.clone(),
         row_count: sheet.rows.len() as i64,
         sample_rows: sheet.rows.iter().take(SAMPLE_ROWS).cloned().collect(),
+        skipped_title_rows: sheet.skipped_title_rows.clone(),
         headers: sheet.headers,
         columns,
         known_properties: known,
@@ -283,6 +284,17 @@ impl Mapping {
             return Err("Every column is set to be skipped, so there is nothing to import.".into());
         }
 
+        // A whole-name column and separate name columns would disagree about
+        // whose value wins.
+        if seen_core.contains(&CoreField::FullName)
+            && (seen_core.contains(&CoreField::FirstName)
+                || seen_core.contains(&CoreField::LastName))
+        {
+            return Err(
+                "Map names either to Full name or to First name and Last name, not both.".into(),
+            );
+        }
+
         let match_key = match subject {
             PropertySubject::Contact => CoreField::Email,
             PropertySubject::Organization => CoreField::OrgName,
@@ -305,11 +317,30 @@ impl Mapping {
     }
 
     fn core_value<'a>(&self, row: &'a [String], field: CoreField) -> &'a str {
-        self.core
+        let direct = self
+            .core
             .iter()
             .find(|(_, mapped)| *mapped == field)
-            .map(|(index, _)| self.cell(row, *index))
-            .unwrap_or_default()
+            .map(|(index, _)| self.cell(row, *index));
+        if let Some(value) = direct {
+            return value;
+        }
+        // First and last name can come from a single whole-name column.
+        if matches!(field, CoreField::FirstName | CoreField::LastName) {
+            if let Some((index, _)) = self
+                .core
+                .iter()
+                .find(|(_, mapped)| *mapped == CoreField::FullName)
+            {
+                let (first, last) = split_full_name(self.cell(row, *index));
+                return if field == CoreField::FirstName {
+                    first
+                } else {
+                    last
+                };
+            }
+        }
+        ""
     }
 
     /// The `(section, key, value)` triples this row writes, skipping blanks.
@@ -1003,6 +1034,25 @@ pub async fn import_row(
     match import_row_inner(subject, mapping, policy, row, actor_user_id, actor).await {
         Ok(outcome) => outcome,
         Err(error) => RowOutcome::Failed(error),
+    }
+}
+
+/// Split a whole name into `(first, last)`, borrowing from the cell.
+///
+/// "Last, First" (with a comma) is read surname-first; otherwise the last word
+/// is the surname and everything before it the first name. A single word is
+/// treated as the surname, since a person record needs one.
+fn split_full_name(value: &str) -> (&str, &str) {
+    let value = value.trim();
+    if let Some((last, first)) = value.split_once(',') {
+        let (first, last) = (first.trim(), last.trim());
+        if !first.is_empty() && !last.is_empty() {
+            return (first, last);
+        }
+    }
+    match value.rsplit_once(char::is_whitespace) {
+        Some((first, last)) => (first.trim(), last.trim()),
+        None => ("", value),
     }
 }
 

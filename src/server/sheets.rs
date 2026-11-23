@@ -33,6 +33,16 @@ pub struct Sheet {
     pub sheet_name: String,
     pub headers: Vec<String>,
     pub rows: Vec<Vec<String>>,
+    /// Title rows found above the column names and left out, as their text.
+    pub skipped_title_rows: Vec<String>,
+}
+
+/// How many rows at the top may be read as a title before the column names.
+const MAX_TITLE_ROWS: usize = 3;
+
+/// Cells in a row that hold something.
+fn filled(row: &[String]) -> usize {
+    row.iter().filter(|cell| !cell.trim().is_empty()).count()
 }
 
 /// Parse an uploaded file, choosing the reader from its extension.
@@ -82,6 +92,28 @@ fn clean_cell(value: &str) -> String {
 /// and fully-blank leading/trailing rows and columns are dropped.
 fn finish(sheet_name: &str, mut grid: Vec<Vec<String>>) -> Result<Sheet, String> {
     grid.retain(|row| row.iter().any(|cell| !cell.trim().is_empty()));
+
+    // Many hand-made sheets put a title such as "Outreach Tracker" in a row of
+    // its own above the column names. A row with a single filled cell, followed
+    // by one with several, is that kind of title rather than the header.
+    // Blank rows are already gone, so every row before the first one with two
+    // or more filled cells has exactly one.
+    let header_at = grid
+        .iter()
+        .take(MAX_TITLE_ROWS + 1)
+        .position(|row| filled(row) >= 2)
+        .unwrap_or(0);
+    let skipped_title_rows: Vec<String> = grid
+        .drain(..header_at)
+        .map(|title| {
+            title
+                .iter()
+                .map(|cell| clean_cell(cell))
+                .find(|cell| !cell.is_empty())
+                .unwrap_or_default()
+        })
+        .collect();
+
     let mut rows = grid.into_iter();
     let Some(raw_headers) = rows.next() else {
         return Err("That file has no rows.".into());
@@ -139,6 +171,7 @@ fn finish(sheet_name: &str, mut grid: Vec<Vec<String>>) -> Result<Sheet, String>
         sheet_name: sheet_name.to_string(),
         headers,
         rows: data,
+        skipped_title_rows,
     })
 }
 
