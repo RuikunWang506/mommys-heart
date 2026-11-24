@@ -16,7 +16,7 @@ use crate::pages::people::ContactDetail;
 use crate::server_fns::contact_directory::{
     add_contact_communication, get_contact, list_contact_categories,
     save_contact, search_contacts, set_contact_categories, CommunicationKind, Contact,
-    ContactCategory, ContactDetails, ContactInput,
+    ContactCategory, ContactDetails, ContactInput, ContactViewSummary,
 };
 use crate::server_fns::contact_rules::{contact_rule_guidance, RuleGuidance};
 use crate::server_fns::contacts::{ContactType, MAX_TYPES};
@@ -798,6 +798,93 @@ pub fn NewContactPage() -> impl IntoView {
     })
 }
 
+/// The ready-made views: each sets the contact-type filter, and the Clients and
+/// Volunteers views add case and application detail to every card.
+const CONTACT_VIEWS: [(&str, &str, &str); 3] = [
+    ("", "All contacts", "Everyone in the directory."),
+    (
+        "client",
+        "Clients",
+        "Client contacts, with how many current and closed cases each has.",
+    ),
+    (
+        "volunteer",
+        "Volunteers",
+        "Volunteer contacts, with their application status and current cases.",
+    ),
+];
+
+#[component]
+fn ContactViewTabs(contact_type: RwSignal<String>, offset: RwSignal<i64>) -> impl IntoView {
+    let state = expect_context::<AppState>();
+    // Case and application detail is admin-only, so others get the plain list.
+    let shows_detail = state.has_operations_admin_permissions();
+    let description = move || {
+        let current = contact_type.get();
+        CONTACT_VIEWS
+            .iter()
+            .find(|(slug, _, _)| *slug == current)
+            .map(|(slug, _, text)| {
+                if slug.is_empty() || shows_detail {
+                    (*text).to_string()
+                } else {
+                    "Filtered to this contact type.".to_string()
+                }
+            })
+            .unwrap_or_else(|| "Filtered by the contact type chosen on the left.".to_string())
+    };
+    view! {
+        <div class="space-y-1.5">
+            <div class="flex flex-wrap gap-2" role="group" aria-label="Contact views">
+                {CONTACT_VIEWS
+                    .iter()
+                    .map(|(slug, label, _)| {
+                        let slug = *slug;
+                        let selected = move || contact_type.get() == slug;
+                        view! {
+                            <button
+                                type="button"
+                                aria-pressed=move || selected().to_string()
+                                on:click=move |_| {
+                                    offset.set(0);
+                                    contact_type.set(slug.to_string());
+                                }
+                                class=move || {
+                                    if selected() {
+                                        "rounded-full bg-primary-500 px-4 py-1.5 text-sm font-semibold text-white"
+                                    } else {
+                                        "rounded-full border border-slate-700 px-4 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
+                                    }
+                                }
+                            >
+                                {*label}
+                            </button>
+                        }
+                    })
+                    .collect_view()}
+            </div>
+            <p class="text-xs text-slate-500">{description}</p>
+        </div>
+    }
+}
+
+/// One line for a card in the Clients or Volunteers view.
+fn view_summary_text(summary: &ContactViewSummary) -> String {
+    let current = match summary.active_cases {
+        0 => "No current cases".to_string(),
+        1 => "1 current case".to_string(),
+        n => format!("{n} current cases"),
+    };
+    if !summary.volunteer_status.is_empty() {
+        let current = current.to_lowercase();
+        format!("{} \u{b7} {current}", summary.volunteer_status)
+    } else if summary.closed_cases > 0 {
+        format!("{current} \u{b7} {} closed", summary.closed_cases)
+    } else {
+        current
+    }
+}
+
 #[component]
 fn ContactsDirectory() -> impl IntoView {
     let state = expect_context::<AppState>();
@@ -1070,6 +1157,7 @@ fn ContactsDirectory() -> impl IntoView {
                     })
                     .collect_view();
                 let matched = contact.filtered_properties.clone();
+                let summary = contact.view_summary.as_ref().map(view_summary_text);
                 view! {
                     <A
                         href=href
@@ -1084,6 +1172,9 @@ fn ContactsDirectory() -> impl IntoView {
 
                         {(!subtitle.is_empty()).then(|| view! {
                             <p class="mt-0.5 text-xs text-slate-400">{subtitle}</p>
+                        })}
+                        {summary.map(|text| view! {
+                            <p class="mt-1 text-xs font-medium text-slate-300">{text}</p>
                         })}
                         <div class="mt-2 flex flex-wrap gap-1">{tags}</div>
                         <div class="mt-2 flex flex-wrap gap-1">
@@ -1256,6 +1347,7 @@ fn ContactsDirectory() -> impl IntoView {
                     </p>
                 </aside>
                 <section class="space-y-3">
+                    <ContactViewTabs contact_type=contact_type offset=offset />
                     <div class="flex flex-col gap-2 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
                         <span>
                             "Showing " {move || contacts.get().len()} " of "

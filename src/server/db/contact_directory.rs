@@ -11,6 +11,7 @@ use std::collections::HashMap;
 use crate::server::db::{audit, contact_rules, contacts, ids, organizations, pool, property_filters};
 use crate::server_fns::contact_directory::{
     CommunicationKind, Contact, ContactCategory, ContactCommunication, ContactDetails, ContactInput,
+    ContactViewSummary,
 };
 use crate::server_fns::contacts::{ContactInput as PersonInput, ContactType};
 use crate::server_fns::organizations::{OrganizationInput, OrganizationKind};
@@ -149,6 +150,7 @@ fn fold_contacts(rows: Vec<ContactRow>) -> Vec<Contact> {
                 has_account: row.has_account,
                 updated_at: stamp(row.updated_at),
                 filtered_properties: Vec::new(),
+                view_summary: None,
             });
             index
         };
@@ -418,7 +420,90 @@ pub async fn search_page(
     for contact in &mut items {
         contact.filtered_properties = matched.get(&contact.id).cloned().unwrap_or_default();
     }
+    // Case and application detail comes from the linked account, so it follows
+    // the same admin-only rule as the account projection above.
+    if include_account_projection {
+        // `contact_type` is the bound slug by this point.
+        let summaries = match ContactType::from_slug(contact_type) {
+            Some(ContactType::Client) => client_summaries(&ids).await?,
+            Some(ContactType::Volunteer) => volunteer_summaries(&ids).await?,
+            _ => HashMap::new(),
+        };
+        for contact in &mut items {
+            contact.view_summary = summaries.get(&contact.id).cloned();
+        }
+    }
     Ok(Page { items, total })
+}
+
+/// Case counts for client contacts: cases they are the client on, or own.
+async fn client_summaries(
+    ids: &[String],
+) -> Result<HashMap<String, ContactViewSummary>, sqlx::Error> {
+    let rows = sqlx::query_as::<_, (String, i64, i64)>(
+        "SELECT ct.id,
+                count(DISTINCT k.id) FILTER (WHERE k.status IN ('pending_review', 'open', 'monitor')),
+                count(DISTINCT k.id) FILTER (WHERE k.status = 'closed')
+         FROM contacts ct
+         LEFT JOIN cases k
+             ON k.id IN (SELECT cc.case_id FROM case_contacts cc
+                         WHERE cc.contact_id = ct.id AND cc.role = 'client')
+             OR (ct.user_id IS NOT NULL AND k.owner_id = ct.user_id)
+         WHERE ct.id = ANY($1::text[])
+         GROUP BY ct.id",
+    )
+    .bind(ids)
+    .fetch_all(pool())
+    .await?;
+    Ok(rows
+        .into_iter()
+        .map(|(id, active_cases, closed_cases)| {
+            let summary = ContactViewSummary {
+                active_cases,
+                closed_cases,
+                volunteer_status: String::new(),
+            };
+            (id, summary)
+        })
+        .collect())
+}
+
+/// Application status and active case count for volunteer contacts.
+async fn volunteer_summaries(
+    ids: &[String],
+) -> Result<HashMap<String, ContactViewSummary>, sqlx::Error> {
+    let rows = sqlx::query_as::<_, (String, bool, Option<String>, i64)>(
+        "SELECT ct.id, ct.user_id IS NOT NULL, v.status,
+                (SELECT count(DISTINCT a.case_id)
+                 FROM case_assignments a
+                 JOIN cases k ON k.id = a.case_id
+                 WHERE a.user_id = ct.user_id AND k.status IN ('open', 'monitor'))
+         FROM contacts ct
+         LEFT JOIN volunteers v ON v.user_id = ct.user_id
+         WHERE ct.id = ANY($1::text[])",
+    )
+    .bind(ids)
+    .fetch_all(pool())
+    .await?;
+    Ok(rows
+        .into_iter()
+        .map(|(id, has_account, status, active_cases)| {
+            let volunteer_status = match (has_account, status.as_deref()) {
+                (false, _) => "No account yet",
+                (true, Some("approved")) => "Approved",
+                (true, Some("pending")) => "Application pending",
+                (true, Some("denied")) => "Application declined",
+                (true, Some("revoked")) => "Volunteer role removed",
+                (true, _) => "No volunteer application",
+            };
+            let summary = ContactViewSummary {
+                active_cases,
+                closed_cases: 0,
+                volunteer_status: volunteer_status.to_string(),
+            };
+            (id, summary)
+        })
+        .collect())
 }
 
 pub async fn get(
