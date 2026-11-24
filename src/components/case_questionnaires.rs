@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::time::Duration;
 
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -232,6 +233,83 @@ pub fn CaseIntakeTaskSummary(case_id: String, properties: Vec<CaseProperty>) -> 
     }
 }
 
+const AUTOSAVE_DELAY: Duration = Duration::from_millis(1500);
+const RETRY_DELAY: Duration = Duration::from_secs(5);
+
+#[derive(Clone, Copy)]
+struct DraftSaver {
+    case_id: StoredValue<String>,
+    slug: &'static str,
+    answers: RwSignal<BTreeMap<String, String>>,
+    submitting: RwSignal<bool>,
+    generation: RwSignal<u32>,
+    saving: RwSignal<bool>,
+    dirty: RwSignal<bool>,
+    status: RwSignal<String>,
+}
+
+impl DraftSaver {
+    fn save(self, generation: u32, is_retry: bool) {
+        if self.generation.try_get_untracked() != Some(generation)
+            || self.saving.get_untracked()
+            || self.submitting.get_untracked()
+        {
+            return;
+        }
+        let Some(current) = self.answers.try_get_untracked() else {
+            return;
+        };
+        self.saving.set(true);
+        self.status.set("Saving\u{2026}".to_string());
+        spawn_local(async move {
+            let result = case_properties::save_questionnaire_draft(
+                self.case_id.get_value(),
+                self.slug.to_string(),
+                current,
+            )
+            .await;
+            let _ = self.saving.try_set(false);
+            let latest = self.generation.try_get_untracked();
+            match result {
+                Ok(()) => {
+                    if latest == Some(generation) {
+                        let _ = self.dirty.try_set(false);
+                    }
+                    let _ = self.status.try_set("Saved".to_string());
+                }
+                Err(e) => {
+                    let _ = self.status.try_set(format!("Not saved: {}", err_text(e)));
+                    if !is_retry && latest == Some(generation) {
+                        set_timeout(move || self.save(generation, true), RETRY_DELAY);
+                    }
+                }
+            }
+            if let Some(latest) = latest {
+                if latest != generation {
+                    self.save(latest, false);
+                }
+            }
+        });
+    }
+
+    fn flush_on_leave(self) {
+        if self.dirty.try_get_untracked() != Some(true)
+            || self.submitting.try_get_untracked() != Some(false)
+        {
+            return;
+        }
+        let (Some(answers), Some(case_id)) =
+            (self.answers.try_get_untracked(), self.case_id.try_get_value())
+        else {
+            return;
+        };
+        let slug = self.slug.to_string();
+        spawn_local(async move {
+            let _ = case_properties::save_questionnaire_draft(case_id, slug, answers).await;
+        });
+    }
+}
+
 fn questionnaire_card(
     case_id: String,
     questionnaire: &'static CaseQuestionnaire,
@@ -245,9 +323,87 @@ fn questionnaire_card(
     let expanded = RwSignal::new(!complete);
     let pending = RwSignal::new(false);
     let error = RwSignal::new(String::new());
+    let case_sv = StoredValue::new(case_id);
+
+    let autosaves = !complete && can_complete;
+    let draft = DraftSaver {
+        case_id: case_sv,
+        slug: questionnaire.slug,
+        answers,
+        submitting: pending,
+        generation: RwSignal::new(0),
+        saving: RwSignal::new(false),
+        dirty: RwSignal::new(false),
+        status: RwSignal::new(String::new()),
+    };
+    let ignore_next_change = RwSignal::new(false);
+    let prefill_note = RwSignal::new(String::new());
+    let nothing_saved_yet = answers.with_untracked(|values| values.is_empty());
+
+    if autosaves && nothing_saved_yet && questionnaire.slug == GENERAL_QUESTIONNAIRE.slug {
+        spawn_local(async move {
+            let signup = match case_properties::general_intake_prefill(case_sv.get_value()).await {
+                Ok(signup) => signup,
+                Err(e) => {
+                    let _ = prefill_note.try_set(format!(
+                        "Could not load the client's signup details: {}",
+                        err_text(e)
+                    ));
+                    return;
+                }
+            };
+            let Some(mut values) = answers.try_get_untracked() else {
+                return;
+            };
+            let mut filled_any = false;
+            for (key, value) in signup {
+                let entry = values.entry(key).or_default();
+                if entry.trim().is_empty() {
+                    *entry = value;
+                    filled_any = true;
+                }
+            }
+            if filled_any {
+                ignore_next_change.set(true);
+                prefill_note.set(
+                    "Some answers were filled in from the client's signup. Check them before submitting."
+                        .to_string(),
+                );
+                answers.set(values);
+            }
+        });
+    }
+
+    if autosaves {
+        let unload = window_event_listener(leptos::ev::beforeunload, move |event| {
+            if draft.dirty.try_get_untracked() == Some(true) {
+                event.prevent_default();
+                event.set_return_value("");
+            }
+        });
+        on_cleanup(move || {
+            unload.remove();
+            draft.flush_on_leave();
+        });
+    }
+
+    Effect::new(move |previous: Option<()>| {
+        answers.track();
+        if previous.is_none() || !autosaves {
+            return;
+        }
+        if ignore_next_change.get_untracked() {
+            ignore_next_change.set(false);
+            return;
+        }
+        draft.dirty.set(true);
+        draft.generation.update(|value| *value += 1);
+        let generation = draft.generation.get_untracked();
+        set_timeout(move || draft.save(generation, false), AUTOSAVE_DELAY);
+    });
 
     let save = move || {
-        if pending.get_untracked() {
+        if pending.get_untracked() || draft.saving.get_untracked() {
             return;
         }
         let submitted = answers.get_untracked();
@@ -256,25 +412,26 @@ fn questionnaire_card(
             return;
         }
 
-        let case_id = case_id.clone();
+        draft.generation.update(|value| *value += 1);
         pending.set(true);
         error.set(String::new());
         spawn_local(async move {
             match case_properties::save_case_questionnaire(
-                case_id,
+                case_sv.get_value(),
                 questionnaire.slug.to_string(),
                 submitted,
             )
             .await
             {
                 Ok(()) => {
-                    pending.set(false);
-                    expanded.set(false);
+                    let _ = draft.dirty.try_set(false);
+                    let _ = pending.try_set(false);
+                    let _ = expanded.try_set(false);
                     on_saved.run(());
                 }
                 Err(server_error) => {
-                    pending.set(false);
-                    error.set(err_text(server_error));
+                    let _ = pending.try_set(false);
+                    let _ = error.try_set(err_text(server_error));
                 }
             }
         });
@@ -381,18 +538,24 @@ fn questionnaire_card(
                     save();
                 }
             >
+                <Show when=move || !prefill_note.get().is_empty()>
+                    <p class="text-xs text-slate-500">{move || prefill_note.get()}</p>
+                </Show>
                 {questions}
                 {trigger_preview}
                 <Show when=move || !error.get().is_empty()>
                     <p class="text-sm text-rose-300" role="alert">{move || error.get()}</p>
                 </Show>
-                <button
-                    type="submit"
-                    prop:disabled=move || pending.get()
-                    class="rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                    {move || if pending.get() { "Saving\u{2026}" } else { "Submit questionnaire" }}
-                </button>
+                <div class="flex flex-wrap items-center gap-3">
+                    <button
+                        type="submit"
+                        prop:disabled=move || pending.get() || draft.saving.get()
+                        class="rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                        {move || if pending.get() { "Saving\u{2026}" } else { "Submit questionnaire" }}
+                    </button>
+                    <span role="status" class="text-xs text-slate-500">{move || draft.status.get()}</span>
+                </div>
             </form>
 
             <Show when=move || !can_complete && !complete>

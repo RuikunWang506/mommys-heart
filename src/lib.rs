@@ -12,6 +12,7 @@ pub mod components {
     pub mod admin_activity;
     pub mod admin_case_access;
     pub mod admin_case_requests;
+    pub mod admin_case_team;
     pub mod admin_cases;
     pub mod admin_manage_cases;
     pub mod admin_manage_users;
@@ -36,6 +37,7 @@ pub mod components {
     pub mod layout;
     pub mod loading;
     pub mod organization_properties;
+    pub mod possible_duplicates;
     pub mod profile_link;
     pub mod property_filters;
     pub mod property_rows;

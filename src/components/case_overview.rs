@@ -5,13 +5,14 @@ use leptos_router::components::A;
 use crate::components::case_contacts::CaseContactsPanel;
 use crate::components::case_plan::CasePlanCard;
 use crate::components::case_questionnaires::intake_status;
-use crate::helpers::format::initials;
+use crate::helpers::format::{access_label, badge_pill, initials};
 use crate::helpers::visibility::Visibility;
 use crate::server_fns::case_contacts::{list_case_contacts, CaseContact, CaseContactRole};
 use crate::server_fns::case_notes::{
     list_case_notes, CaseNoteListFilters, CaseNoteListItem, CaseNoteState,
 };
 use crate::server_fns::case_properties::CaseProperty;
+use crate::server_fns::cases::{list_case_team, CaseTeamMember};
 use crate::server_fns::err_text;
 use crate::state::AppState;
 
@@ -31,6 +32,7 @@ pub fn CaseOverview(
     show_intake: bool,
     show_case_info: bool,
     show_people: bool,
+    show_team: bool,
     can_edit_people: bool,
     show_plan: bool,
     can_edit_plan: bool,
@@ -101,6 +103,79 @@ pub fn CaseOverview(
             open
         });
     }
+
+    let team = RwSignal::new(Vec::<CaseTeamMember>::new());
+    let team_loading = RwSignal::new(show_team);
+    let team_error = RwSignal::new(String::new());
+    if show_team {
+        spawn_local(async move {
+            let result = list_case_team(case_sv.get_value()).await;
+            let _ = team_loading.try_set(false);
+            match result {
+                Ok(members) => {
+                    let _ = team.try_set(members);
+                }
+                Err(e) => {
+                    let _ = team_error.try_set(err_text(e));
+                }
+            }
+        });
+    }
+    let team_summary = move || {
+        if !show_team {
+            return ().into_any();
+        }
+        view! {
+            <section class=CARD aria-labelledby="team-heading">
+                <div class=CARD_HEAD>
+                    <h2 id="team-heading" class="text-[19px] font-semibold">"Case team"</h2>
+                </div>
+                {move || {
+                    if team_loading.get() {
+                        return view! { <p class="mt-3 text-sm text-slate-500">"Loading\u{2026}"</p> }.into_any();
+                    }
+                    if !team_error.get().is_empty() {
+                        return view! { <p class="mt-3 text-sm text-rose-400">{team_error.get()}</p> }.into_any();
+                    }
+                    let members = team.get();
+                    if members.is_empty() {
+                        return view! { <p class="mt-3 text-sm text-slate-500">"No volunteers are assigned to this case yet."</p> }.into_any();
+                    }
+                    view! {
+                        <ul class="mt-4 space-y-4">
+                            {members
+                                .into_iter()
+                                .map(|member| {
+                                    let access = access_label(&member.capabilities);
+                                    view! {
+                                        <li class="flex items-center gap-3">
+                                            <span
+                                                aria-hidden="true"
+                                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f3ece1] text-sm font-bold text-[#5b4f43]"
+                                            >
+                                                {initials(&member.name)}
+                                            </span>
+                                            <A
+                                                href=format!("/profile/{}", member.user_id)
+                                                attr:class="min-w-0 flex-1 truncate font-bold hover:text-primary-300"
+                                            >
+                                                {member.name}
+                                            </A>
+                                            {access.map(|(label, colors)| view! {
+                                                <span class=badge_pill(colors)>{label}</span>
+                                            })}
+                                        </li>
+                                    }
+                                })
+                                .collect_view()}
+                        </ul>
+                    }
+                        .into_any()
+                }}
+            </section>
+        }
+        .into_any()
+    };
 
     let intake = Memo::new(move |_| properties.with(|all| intake_status(all)));
     let intake_item = move || {
@@ -221,6 +296,7 @@ pub fn CaseOverview(
                             .into_iter()
                             .map(|c| {
                                 let detail = person_detail(&c);
+                                let contact_href = format!("/contacts/{}", c.contact_id);
                                 view! {
                                     <li class="flex items-start gap-3">
                                         <span
@@ -230,7 +306,7 @@ pub fn CaseOverview(
                                             {initials(&c.contact_name)}
                                         </span>
                                         <div class="min-w-0 flex-1">
-                                            <p class="truncate font-bold">{c.contact_name}</p>
+                                            <A href=contact_href attr:class="block truncate font-bold hover:text-primary-300">{c.contact_name}</A>
                                             <p class="text-sm text-slate-500">{detail}</p>
                                         </div>
                                         {can_edit_people.then(|| view! {
@@ -389,6 +465,7 @@ pub fn CaseOverview(
             </div>
             <aside class="space-y-6" aria-label="Case at a glance">
                 {people_summary}
+                {team_summary}
                 {show_case_info.then_some(case_info)}
                 {recent_activity}
             </aside>

@@ -5,10 +5,12 @@ use leptos::task::spawn_local;
 use leptos_router::components::A;
 use leptos_router::hooks::use_query_map;
 
+use crate::components::admin_case_team::CaseTeam;
 use crate::components::admin_cases::CaseRequests;
 use crate::components::admin_requests::AdminRequestCenter;
 use crate::components::case_tabs::CaseTab;
 use crate::components::loading::Loading;
+use crate::components::possible_duplicates::PossibleDuplicates;
 use crate::pages::cases::CaseDetail;
 use crate::server_fns::admin_requests::AdminRequestKind;
 use crate::server_fns::capabilities::CaseCapability;
@@ -228,6 +230,7 @@ pub fn ManageCases(
                                 "Manage my case access"
                             </A>
                         </div>
+                        <CaseTeam case_id=summary.id.clone() is_site_admin=is_site_admin reload=reload />
                     </div>
                 }
                 .into_any()
@@ -235,6 +238,7 @@ pub fn ManageCases(
             Some(summary) => view! {
                 <div class="space-y-4">
                     <BackToCases href=back_href.get_value() />
+                    <CaseTeam case_id=summary.id.clone() is_site_admin=is_site_admin reload=reload />
                     <CaseDetail
                         summary=summary
                         reload=reload
@@ -375,6 +379,8 @@ pub fn ManageCases(
                 </div>
                 <CaseRequests reload=reload />
             </section>
+
+            <PossibleDuplicates />
 
             <section class="space-y-4 border-t border-slate-800 pt-8">
                 <div>

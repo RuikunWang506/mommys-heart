@@ -422,7 +422,7 @@ fn CrmImportWorkspace() -> impl IntoView {
                         </button>
                     </div>
                     <p class="mt-2 text-xs text-slate-500">
-                        ".csv, .tsv, or .xlsx, up to 10 MB and 5,000 rows. The first row must hold the column names. Older .xls files need re-saving as .xlsx first."
+                        ".csv, .tsv, or .xlsx, up to 10 MB and 5,000 rows. The first row should hold the column names; a title row above them is skipped. Older .xls files need re-saving as .xlsx first."
                     </p>
                 </section>
 
@@ -543,6 +543,7 @@ fn FilePreview(preview: RwSignal<Option<ImportPreview>>) -> impl IntoView {
         let headers = current.headers.clone();
         let rows = current.sample_rows.clone();
         let shown = rows.len();
+        let skipped = current.skipped_title_rows.clone();
         view! {
             <section class=PANEL>
                 <div class="flex flex-wrap items-start justify-between gap-3">
@@ -560,6 +561,20 @@ fn FilePreview(preview: RwSignal<Option<ImportPreview>>) -> impl IntoView {
                         <p>{current.row_count} " rows, " {headers.len()} " columns"</p>
                     </div>
                 </div>
+
+                {(!skipped.is_empty()).then(|| {
+                    let titles = skipped
+                        .iter()
+                        .map(|title| format!("\u{201c}{title}\u{201d}"))
+                        .collect::<Vec<_>>()
+                        .join(", ");
+                    view! {
+                        <p class="mt-3 rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-400">
+                            "Skipped the title row " {titles}
+                            " above the column names. The column names were read from the row below it."
+                        </p>
+                    }
+                })}
 
                 <div class="mt-4 w-full max-w-full overflow-x-auto rounded-lg border border-slate-800 bg-slate-950">
                     <table class="w-full min-w-max text-left text-xs">

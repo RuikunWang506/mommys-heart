@@ -20,6 +20,31 @@ pub async fn signer_for_case(case_id: &str) -> Result<Option<String>, sqlx::Erro
     .await
 }
 
+/// Signup details used to prefill the general intake.
+#[derive(sqlx::FromRow)]
+pub struct IntakePrefill {
+    pub first_name: String,
+    pub last_name: String,
+    pub date_of_birth: String,
+    pub phone: String,
+    pub email: String,
+}
+
+pub async fn intake_prefill_for_case(
+    case_id: &str,
+) -> Result<Option<IntakePrefill>, sqlx::Error> {
+    sqlx::query_as(
+        "SELECT u.first_name, u.last_name, COALESCE(to_char(a.date_of_birth, 'YYYY-MM-DD'), '') AS date_of_birth,
+                a.phone, u.email
+         FROM client_agreements a JOIN users u ON u.id = a.user_id
+         WHERE a.case_id = $1
+         LIMIT 1",
+    )
+    .bind(case_id)
+    .fetch_optional(crate::server::db::pool())
+    .await
+}
+
 /// Record a signed agreement inside the caller's transaction.
 pub async fn insert_in(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,

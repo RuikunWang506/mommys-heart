@@ -1,5 +1,7 @@
 //! Formatting helpers shared by the server and the UI.
 
+use crate::server_fns::capabilities::CaseCapability;
+
 /// The class list for a small rounded status pill, so every badge in the app is
 /// shaped the same and only its colours differ.
 pub fn badge_pill(colors: &str) -> String {
@@ -52,5 +54,36 @@ pub fn human_size(bytes: i64) -> String {
         format!("{:.1} KB", bytes / KB)
     } else {
         format!("{bytes:.0} B")
+    }
+}
+
+/// A short label summarizing a user's access to a case from their capabilities.
+pub fn access_label(caps: &[CaseCapability]) -> Option<(&'static str, &'static str)> {
+    if caps.is_empty() {
+        return None;
+    }
+    if caps.len() == CaseCapability::ALL.len() {
+        Some((
+            "Full access",
+            "bg-primary-500/15 text-primary-300 ring-1 ring-primary-500/30",
+        ))
+    } else if caps.contains(&CaseCapability::EditCase) {
+        Some((
+            "Manager",
+            "bg-primary-500/15 text-primary-300 ring-1 ring-primary-500/30",
+        ))
+    } else if caps.contains(&CaseCapability::UploadEvidence)
+        || caps.contains(&CaseCapability::AddNotes)
+        || caps.contains(&CaseCapability::SendMessages)
+    {
+        Some((
+            "Contributor",
+            "bg-sky-500/15 text-sky-300 ring-1 ring-sky-500/30",
+        ))
+    } else {
+        Some((
+            "Viewer",
+            "bg-slate-500/15 text-slate-300 ring-1 ring-slate-500/30",
+        ))
     }
 }

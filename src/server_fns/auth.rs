@@ -651,6 +651,22 @@ pub async fn verify_registration(code: String) -> Result<User, ServerFnError> {
         )
         .await
         .map_err(ServerFnError::new)?;
+        if let Some(emergency) = emergency_contact_input(&agreement, &signup.case_id) {
+            let emergency_id = contacts::create_in(&mut tx, &emergency, &account.full_name())
+                .await
+                .map_err(ServerFnError::new)?;
+            case_contacts::add_in(
+                &mut tx,
+                &signup.case_id,
+                &emergency_id,
+                CaseContactRole::EmergencyContact,
+                agreement.emergency_relationship.trim(),
+                false,
+                &account.full_name(),
+            )
+            .await
+            .map_err(ServerFnError::new)?;
+        }
     }
     tx.commit().await.map_err(ServerFnError::new)?;
 
@@ -863,4 +879,31 @@ pub async fn logout() -> Result<(), ServerFnError> {
     }
     append_cookie(clear_session_cookie())?;
     Ok(())
+}
+
+#[cfg(feature = "ssr")]
+fn emergency_contact_input(
+    agreement: &crate::helpers::client_details::ClientAgreementDetails,
+    case_id: &str,
+) -> Option<crate::server_fns::contacts::ContactInput> {
+    use crate::server_fns::contacts::{ContactInput, ContactType};
+
+    let name = agreement.emergency_name.trim();
+    if name.is_empty() {
+        return None;
+    }
+    let (first_name, last_name) = name.rsplit_once(' ').unwrap_or(("", name));
+    ContactInput {
+        first_name: first_name.trim().to_string(),
+        last_name: last_name.trim().to_string(),
+        phone: agreement.emergency_phone.clone(),
+        types: vec![ContactType::EmergencyContact],
+        source: "Client signup".to_string(),
+        ..Default::default()
+    }
+    .validate()
+    .map_err(|error| {
+        tracing::warn!(case_id, %error, "skipped signup emergency contact that failed validation");
+    })
+    .ok()
 }

@@ -69,6 +69,7 @@ impl From<ContactRow> for Contact {
             linked_email: row.linked_email.unwrap_or_default(),
             linked_role: row.linked_role.as_deref().and_then(AccountRole::from_slug),
             has_account_field_conflict: row.has_account_field_conflict,
+            openable_profile_id: String::new(),
         }
     }
 }
@@ -243,6 +244,14 @@ pub async fn get(
     Ok(row.map(Into::into))
 }
 
+pub async fn account_of(id: &str) -> Result<Option<String>, sqlx::Error> {
+    sqlx::query_scalar::<_, Option<String>>("SELECT user_id FROM contacts WHERE id = $1")
+        .bind(id)
+        .fetch_optional(pool())
+        .await
+        .map(Option::flatten)
+}
+
 /// The contact linked to an account, if there is one. Used by the person page to
 /// go from a user to their CRM record.
 pub async fn for_user(user_id: &str) -> Result<Option<Contact>, sqlx::Error> {
@@ -398,6 +407,16 @@ pub async fn create(
     let id = ids::next(&mut *tx, "ct").await?;
     insert_in(&mut tx, &id, input, None, actor).await?;
     tx.commit().await?;
+    Ok(id)
+}
+
+pub async fn create_in(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    input: &ContactInput,
+    actor: &str,
+) -> Result<String, sqlx::Error> {
+    let id = ids::next(&mut **tx, "ct").await?;
+    insert_in(tx, &id, input, None, actor).await?;
     Ok(id)
 }
 

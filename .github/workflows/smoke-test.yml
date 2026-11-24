@@ -1,0 +1,75 @@
+name: Smoke Test
+
+# Basic check on every PR: the app compiles and launches without errors.
+on:
+  pull_request:
+
+concurrency:
+  group: smoke-test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    # Matches the app's default DATABASE_URL (postgres:postgres@localhost:5432).
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      CARGO_NET_RETRY: 5
+      CARGO_INCREMENTAL: 0
+      RUSTFLAGS: --cfg erase_components
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain and cargo-leptos
+        run: |
+          rustup show
+          rustup target add wasm32-unknown-unknown
+          curl -L --proto '=https' --tlsv1.2 -sSf --retry 5 --retry-all-errors \
+            https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+          cargo binstall -y --locked cargo-leptos@0.3.7
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build
+        run: cargo leptos build --release
+
+      - name: Launch and check it serves
+        env:
+          # Release builds default to production, which demands real secrets.
+          APP_ENV: development
+          LEPTOS_SITE_ROOT: target/site
+          LEPTOS_SITE_ADDR: 127.0.0.1:3000
+        run: |
+          ./target/release/mommys-heart-app > server.log 2>&1 &
+          pid=$!
+          ok=0
+          for i in $(seq 1 120); do
+            if ! kill -0 "$pid" 2>/dev/null; then
+              echo "::error::Server exited during startup"; break
+            fi
+            if [ "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/)" = "200" ]; then
+              ok=1; break
+            fi
+            sleep 1
+          done
+          kill "$pid" 2>/dev/null || true
+          echo "----- server log -----"; cat server.log
+          [ "$ok" = 1 ] || { echo "::error::App did not respond with 200 within 120s"; exit 1; }
+          echo "App launched and served / with HTTP 200."

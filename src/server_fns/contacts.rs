@@ -87,6 +87,8 @@ pub struct Contact {
     /// Preserved contact values differ from account-owned projected fields.
     #[serde(default)]
     pub has_account_field_conflict: bool,
+    #[serde(default)]
+    pub openable_profile_id: String,
 }
 
 impl Contact {
@@ -232,9 +234,24 @@ pub async fn load_contact(id: String) -> Result<Option<Contact>, ServerFnError> 
     let user = require_user().await?;
     crate::server::permissions::require_information_management_access(&user)?;
     crate::server_fns::crm::require_staff(&user)?;
-    contacts::get(&id, user.role.has_operations_admin_permissions())
+    let is_operations_admin = user.role.has_operations_admin_permissions();
+    let Some(mut contact) = contacts::get(&id, is_operations_admin)
         .await
-        .map_err(ServerFnError::new)
+        .map_err(ServerFnError::new)?
+    else {
+        return Ok(None);
+    };
+    if let Some(account_id) = contacts::account_of(&id).await.map_err(ServerFnError::new)? {
+        let can_open = is_operations_admin
+            || account_id == user.id
+            || crate::server::db::users::shares_case(&user.id, &account_id)
+                .await
+                .map_err(ServerFnError::new)?;
+        if can_open {
+            contact.openable_profile_id = account_id;
+        }
+    }
+    Ok(Some(contact))
 }
 
 /// Server-side typeahead search over active contacts for relationship pickers.

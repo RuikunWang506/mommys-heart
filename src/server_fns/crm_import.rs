@@ -40,6 +40,8 @@ pub enum CoreField {
     // People
     FirstName,
     LastName,
+    /// One column holding a whole name, split into first and last on import.
+    FullName,
     PreferredName,
     Email,
     Phone,
@@ -64,6 +66,7 @@ pub enum CoreField {
 const PERSON_FIELDS: &[CoreField] = &[
     CoreField::FirstName,
     CoreField::LastName,
+    CoreField::FullName,
     CoreField::PreferredName,
     CoreField::Email,
     CoreField::Phone,
@@ -99,6 +102,7 @@ impl CoreField {
         match self {
             Self::FirstName => "first_name",
             Self::LastName => "last_name",
+            Self::FullName => "full_name",
             Self::PreferredName => "preferred_name",
             Self::Email => "email",
             Self::Phone => "phone",
@@ -124,6 +128,7 @@ impl CoreField {
         match self {
             Self::FirstName => "First name",
             Self::LastName => "Last name",
+            Self::FullName => "Full name (split into first and last)",
             Self::PreferredName => "Preferred name",
             Self::Email => "Email",
             Self::Phone => "Phone",
@@ -162,17 +167,55 @@ impl CoreField {
         match self {
             Self::FirstName => &["first name", "firstname", "given name", "first"],
             Self::LastName => &["last name", "lastname", "surname", "family name", "last"],
+            Self::FullName => &[
+                "full name",
+                "name",
+                "contact name",
+                "contact person",
+                "contact name (first, last)",
+                "contact name (first last)",
+                "name (first, last)",
+                "name (first last)",
+            ],
             Self::PreferredName => &["preferred name", "nickname", "goes by", "known as"],
-            Self::Email => &["email", "e-mail", "email address", "e-mail address", "mail"],
-            Self::Phone => &["phone", "phone number", "telephone", "work phone", "tel"],
+            Self::Email => &[
+                "email",
+                "e-mail",
+                "email address",
+                "e-mail address",
+                "mail",
+                "contact email",
+            ],
+            Self::Phone => &[
+                "phone",
+                "phone number",
+                "telephone",
+                "work phone",
+                "tel",
+                "contact phone",
+                "contact phone number",
+                "contact phone (number)",
+            ],
             Self::Mobile => &["mobile", "mobile phone", "cell", "cell phone", "cellphone"],
             Self::Address => &[
                 "address",
                 "mailing address",
                 "street address",
                 "postal address",
+                "physical address",
+                "office address",
+                "physical office address",
+                "physical (office) address",
             ],
-            Self::JobTitle => &["job title", "title", "position", "role"],
+            Self::JobTitle => &[
+                "job title",
+                "title",
+                "position",
+                "role",
+                "title / role",
+                "title/role",
+                "role / title",
+            ],
             Self::OrganizationName => &[
                 "organization",
                 "organisation",
@@ -181,6 +224,12 @@ impl CoreField {
                 "organization name",
                 "organisation name",
                 "company name",
+                "school",
+                "college",
+                "university",
+                "college/university",
+                "college / university",
+                "agency",
             ],
             Self::ContactTypes => &["contact type", "contact types", "type", "types"],
             Self::Source => &["source", "lead source", "how they found us"],
@@ -367,6 +416,10 @@ pub struct ImportPreview {
     pub row_count: i64,
     pub headers: Vec<String>,
     pub sample_rows: Vec<Vec<String>>,
+    /// Title rows above the column names that were skipped, as their text, so
+    /// the page can say what it left out.
+    #[serde(default)]
+    pub skipped_title_rows: Vec<String>,
     pub columns: Vec<ColumnPlan>,
     /// Every `(section, key)` already in use for this subject, so the browser
     /// can offer them without another round trip.
@@ -801,7 +854,15 @@ pub fn classify_column(
     if let Some(field) = CoreField::match_header(subject, header) {
         return (ColumnTarget::Core { field }, MatchKind::CoreField, Vec::new());
     }
+    classify_property_column(subject, header, known)
+}
 
+/// Like [`classify_column`], but only considers properties, never a core field.
+pub fn classify_property_column(
+    subject: PropertySubject,
+    header: &str,
+    known: &[PropertySuggestion],
+) -> (ColumnTarget, MatchKind, Vec<PropertySuggestion>) {
     let normalized_header = normalize_property_part(header);
 
     // An exact name match is the property, whatever its section.
@@ -908,6 +969,9 @@ pub fn describe_target(
 ) -> String {
     match target {
         ColumnTarget::Ignore => "This column is skipped; nothing is imported from it.".to_string(),
+        ColumnTarget::Core { field } if *field == CoreField::FullName => {
+            "Splits each name into first and last name: \"Alex Sample\" and \"Sample, Alex\" both become Alex / Sample.".to_string()
+        }
         ColumnTarget::Core { field } => {
             if field.is_match_key(subject) {
                 format!(

@@ -97,6 +97,8 @@ pub fn ContactDetail(contact_id: String) -> impl IntoView {
                 let types = person.types.clone();
                 let editable = person.clone();
                 let linked = person.clone();
+                let profile_href = (!person.openable_profile_id.is_empty())
+                    .then(|| format!("/profile/{}", person.openable_profile_id));
                 view! {
                     <div class=PANEL>
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -128,8 +130,16 @@ pub fn ContactDetail(contact_id: String) -> impl IntoView {
                                     }}
                                 </div>
                             </div>
-                            <Show when=move || can_manage>
-                                <div class="flex shrink-0 gap-2">
+                            <div class="flex shrink-0 flex-wrap gap-2">
+                                {profile_href.map(|href| view! {
+                                    <A
+                                        href=href
+                                        attr:class="rounded-full border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
+                                    >
+                                        "Open profile"
+                                    </A>
+                                })}
+                                <Show when=move || can_manage>
                                     <button
                                         type="button"
                                         on:click=move |_| editing.update(|e| *e = !*e)
@@ -144,8 +154,8 @@ pub fn ContactDetail(contact_id: String) -> impl IntoView {
                                     >
                                         {if archived { "Restore" } else { "Archive" }}
                                     </button>
-                                </div>
-                            </Show>
+                                </Show>
+                            </div>
                         </div>
 
                         <Show

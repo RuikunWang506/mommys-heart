@@ -6,7 +6,7 @@ use crate::server::db::{
 };
 use crate::server_fns::capabilities::CaseCapability;
 use crate::server_fns::case_properties::CaseProperty;
-use crate::server_fns::cases::{Case, CaseStatus, CaseSummary, CaseWithdrawal};
+use crate::server_fns::cases::{Case, CaseStatus, CaseSummary, CaseTeamMember, CaseWithdrawal};
 use crate::server_fns::channels::ChannelKind;
 use crate::server_fns::pagination::Page;
 use crate::server_fns::users::{AccountRole, User};
@@ -161,6 +161,34 @@ pub async fn admin_page(
         })
         .collect();
     Ok(Page { items, total })
+}
+
+pub async fn team(
+    case_id: &str,
+) -> Result<Vec<CaseTeamMember>, sqlx::Error> {
+    let rows: Vec<(String, String, Vec<String>)> = sqlx::query_as(&format!(
+        "SELECT u.id, btrim(u.first_name || ' ' || u.last_name), array_agg(ca.capability)
+         FROM case_assignments ca
+         JOIN users u ON u.id = ca.user_id
+         WHERE ca.case_id = $1 AND u.role IN {}
+         GROUP BY u.id, u.first_name, u.last_name
+         ORDER BY u.first_name, u.last_name",
+        AccountRole::STAFF_ROLES_SQL
+    ))
+    .bind(case_id)
+    .fetch_all(pool())
+    .await?;
+    Ok(rows
+        .into_iter()
+        .map(|(user_id, name, slugs)| CaseTeamMember {
+            user_id,
+            name,
+            capabilities: slugs
+                .iter()
+                .filter_map(|slug| CaseCapability::from_slug(slug))
+                .collect(),
+        })
+        .collect())
 }
 
 /// The owner id of a case, if it exists (cheap authorization lookup).

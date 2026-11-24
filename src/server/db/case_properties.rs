@@ -219,6 +219,13 @@ async fn get_at(case_id: &str, visibility: Visibility) -> Result<Vec<CasePropert
         .collect())
 }
 
+pub enum SectionWrite<'a> {
+    Submit { audit_event: &'a str },
+    Draft,
+}
+
+const DRAFT_AUDIT_EVENT: &str = "questionnaire draft saved";
+
 /// Replace one section while preserving every other property at this
 /// visibility. The complete list is rewritten to keep display ordering stable.
 pub async fn replace_section(
@@ -227,7 +234,8 @@ pub async fn replace_section(
     section: &str,
     properties: Vec<CaseProperty>,
     actor: &str,
-) -> Result<(), sqlx::Error> {
+    write: SectionWrite<'_>,
+) -> Result<bool, sqlx::Error> {
     let cleaned = clean(properties)
         .into_iter()
         .map(|property| CaseProperty {
@@ -263,9 +271,17 @@ pub async fn replace_section(
         .filter(|property| property.section == section)
         .cloned()
         .collect::<Vec<_>>();
+    if matches!(write, SectionWrite::Draft)
+        && current
+            .iter()
+            .any(|property| property.key == crate::helpers::case_questionnaires::COMPLETED_KEY)
+    {
+        tx.commit().await?;
+        return Ok(false);
+    }
     if current == cleaned {
         tx.commit().await?;
-        return Ok(());
+        return Ok(true);
     }
 
     let mut replacement = Vec::with_capacity(existing.len() - current.len() + cleaned.len());
@@ -295,15 +311,39 @@ pub async fn replace_section(
     }
     tx.commit().await?;
 
-    audit::record(
-        pool(),
-        audit::Entity::Case,
-        case_id,
-        actor,
-        section,
-        "",
-        "questionnaire completed",
-    )
-    .await?;
-    Ok(())
+    match write {
+        SectionWrite::Submit { audit_event } => {
+            audit::record(pool(), audit::Entity::Case, case_id, actor, section, "", audit_event)
+                .await?;
+        }
+        SectionWrite::Draft => {
+            let recently_logged: bool = sqlx::query_scalar(
+                "SELECT EXISTS (
+                     SELECT 1 FROM audit_log
+                     WHERE entity_type = 'case' AND entity_id = $1 AND field = $2 AND actor = $3
+                       AND new_value = $4 AND created_at > now() - interval '30 minutes'
+                 )",
+            )
+            .bind(case_id)
+            .bind(section)
+            .bind(actor)
+            .bind(DRAFT_AUDIT_EVENT)
+            .fetch_one(pool())
+            .await?;
+            if !recently_logged {
+                audit::record_with_visibility(
+                    pool(),
+                    audit::Entity::Case,
+                    case_id,
+                    actor,
+                    section,
+                    "",
+                    DRAFT_AUDIT_EVENT,
+                    visibility,
+                )
+                .await?;
+            }
+        }
+    }
+    Ok(true)
 }

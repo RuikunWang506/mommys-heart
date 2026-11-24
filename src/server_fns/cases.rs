@@ -729,3 +729,21 @@ pub async fn export_message_transcript(
         .await
         .map_err(ServerFnError::new)
 }
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CaseTeamMember {
+    pub user_id: String,
+    pub name: String,
+    pub capabilities: Vec<CaseCapability>,
+}
+
+#[server(prefix = "/api")]
+pub async fn list_case_team(case_id: String) -> Result<Vec<CaseTeamMember>, ServerFnError> {
+    use crate::server::db::cases;
+    use crate::server::permissions::{require_cap, require_user};
+
+    let user = require_user().await?;
+    crate::server_fns::crm::require_staff(&user)?;
+    require_cap(&user, &case_id, CaseCapability::ViewCase).await?;
+    cases::team(&case_id).await.map_err(ServerFnError::new)
+}

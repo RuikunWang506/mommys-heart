@@ -570,3 +570,12 @@ pub fn answer_properties(
     properties.push(property(COMPLETED_KEY.to_string(), COMPLETED_VALUE.to_string()));
     properties
 }
+
+pub fn draft_properties(
+    questionnaire: &CaseQuestionnaire,
+    answers: &BTreeMap<String, String>,
+) -> Vec<CaseProperty> {
+    let mut properties = answer_properties(questionnaire, answers);
+    properties.retain(|property| property.key != COMPLETED_KEY && !property.value.is_empty());
+    properties
+}

@@ -125,6 +125,9 @@ pub async fn save_case_questionnaire(
         questionnaire.section,
         answer_properties(questionnaire, &answers),
         &user.full_name(),
+        case_properties::SectionWrite::Submit {
+            audit_event: "questionnaire completed",
+        },
     )
     .await
     .map_err(ServerFnError::new)?;
@@ -137,4 +140,91 @@ pub async fn save_case_questionnaire(
         crate::server::notifications::audience_for(Visibility::VolunteerOnly),
     );
     Ok(())
+}
+
+#[server(prefix = "/api")]
+pub async fn save_questionnaire_draft(
+    case_id: String,
+    questionnaire_slug: String,
+    answers: BTreeMap<String, String>,
+) -> Result<(), ServerFnError> {
+    use crate::helpers::case_questionnaires::{
+        draft_properties, is_complete, questionnaire, required_followups, GENERAL_QUESTIONNAIRE,
+    };
+    use crate::server::db::case_properties;
+    use crate::server::permissions::{require_cap, require_user, require_visibility};
+    use crate::server_fns::capabilities::CaseCapability;
+
+    const ALREADY_SUBMITTED: &str =
+        "This questionnaire is already submitted. Use Edit answers to change it.";
+
+    let user = require_user().await?;
+    require_cap(&user, &case_id, CaseCapability::AddNotes).await?;
+    require_visibility(&user, Visibility::VolunteerOnly)?;
+
+    let questionnaire = questionnaire(&questionnaire_slug)
+        .ok_or_else(|| ServerFnError::new("Questionnaire not found."))?;
+    let properties = case_properties::get_case_properties(&case_id, true)
+        .await
+        .map_err(ServerFnError::new)?;
+    if is_complete(&properties, questionnaire) {
+        return Err(ServerFnError::new(ALREADY_SUBMITTED));
+    }
+    if questionnaire.slug != GENERAL_QUESTIONNAIRE.slug
+        && !required_followups(&properties)
+            .iter()
+            .any(|required| required.questionnaire.slug == questionnaire.slug)
+    {
+        return Err(ServerFnError::new(
+            "This follow-up is not required by the current general intake.",
+        ));
+    }
+
+    let saved = case_properties::replace_section(
+        &case_id,
+        Visibility::VolunteerOnly,
+        questionnaire.section,
+        draft_properties(questionnaire, &answers),
+        &user.full_name(),
+        case_properties::SectionWrite::Draft,
+    )
+    .await
+    .map_err(ServerFnError::new)?;
+    if saved {
+        Ok(())
+    } else {
+        Err(ServerFnError::new(ALREADY_SUBMITTED))
+    }
+}
+
+#[server(prefix = "/api")]
+pub async fn general_intake_prefill(
+    case_id: String,
+) -> Result<BTreeMap<String, String>, ServerFnError> {
+    use crate::server::db::client_agreements;
+    use crate::server::permissions::{require_cap, require_user, require_visibility};
+    use crate::server_fns::capabilities::CaseCapability;
+
+    let user = require_user().await?;
+    require_cap(&user, &case_id, CaseCapability::AddNotes).await?;
+    require_visibility(&user, Visibility::VolunteerOnly)?;
+
+    let Some(signup) =
+        client_agreements::intake_prefill_for_case(&case_id)
+            .await
+            .map_err(ServerFnError::new)?
+    else {
+        return Ok(BTreeMap::new());
+    };
+    Ok([
+        ("First name", signup.first_name),
+        ("Last name", signup.last_name),
+        ("Date of birth", signup.date_of_birth),
+        ("Phone", signup.phone),
+        ("Email", signup.email),
+    ]
+    .into_iter()
+    .filter(|(_, value)| !value.trim().is_empty())
+    .map(|(key, value)| (key.to_string(), value))
+    .collect())
 }
