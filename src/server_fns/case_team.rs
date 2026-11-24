@@ -113,19 +113,7 @@ pub async fn save_case_team(
             .partition(|(user_id, _)| *user_id == actor.id)
     };
 
-    if !requested.is_empty() {
-        let rows = requested
-            .iter()
-            .map(|(user_id, caps)| (user_id.clone(), case_id.clone(), caps.clone()))
-            .collect::<Vec<_>>();
-        let filed = admin_requests::create_case_capability_requests(&actor.id, &rows, &note)
-            .await
-            .map_err(|error| ServerFnError::new(error.to_string()))?;
-        for request in filed {
-            crate::server::notifications::notify_admin_request_filed(request);
-        }
-    }
-
+    // Apply direct changes first so a failure here leaves no requests filed.
     if !direct.is_empty() {
         let newly_assigned = case_team::apply(&case_id, &direct, &actor_name)
             .await
@@ -139,6 +127,28 @@ pub async fn save_case_team(
         }
         // Bring the document library's sharing in line with the new team.
         crate::server::sharepoint::sync_case_access(case_id.clone());
+    }
+
+    if !requested.is_empty() {
+        let rows = requested
+            .iter()
+            .map(|(user_id, caps)| (user_id.clone(), case_id.clone(), caps.clone()))
+            .collect::<Vec<_>>();
+        let filed = admin_requests::create_case_capability_requests(&actor.id, &rows, &note)
+            .await
+            .map_err(|error| {
+                // Direct changes already committed; say so, so a retry only re-files.
+                if direct.is_empty() {
+                    ServerFnError::new(error.to_string())
+                } else {
+                    ServerFnError::new(format!(
+                        "Your own access was updated, but the requests could not be filed: {error}"
+                    ))
+                }
+            })?;
+        for request in filed {
+            crate::server::notifications::notify_admin_request_filed(request);
+        }
     }
 
     Ok(match (direct.len(), requested.len()) {

@@ -333,6 +333,8 @@ pub fn CaseTeam(case_id: String, is_site_admin: bool, reload: RwSignal<u32>) -> 
                     {
                         let row_caps = row.caps;
                         let row_removed = row.removed;
+                        // The server rejects capability changes for site admins; only removal is allowed.
+                        let locked = row.role.is_site_admin();
                         let checkboxes = CaseCapability::ALL
                             .into_iter()
                             .map(|capability| {
@@ -350,7 +352,7 @@ pub fn CaseTeam(case_id: String, is_site_admin: bool, reload: RwSignal<u32>) -> 
                                             type="checkbox"
                                             class="h-3.5 w-3.5 rounded border-slate-600 bg-slate-950"
                                             prop:checked=move || row_caps.get().contains(&capability)
-                                            prop:disabled=move || row_removed.get() || unmet()
+                                            prop:disabled=move || locked || row_removed.get() || unmet()
                                             on:change=move |event| {
                                                 let enabled = event_target_checked(&event);
                                                 row_caps.update(|caps| {
@@ -400,6 +402,9 @@ pub fn CaseTeam(case_id: String, is_site_admin: bool, reload: RwSignal<u32>) -> 
                                     </button>
                                 </div>
                                 <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1.5">{checkboxes}</div>
+                                {locked.then(|| view! {
+                                    <p class="mt-1 text-xs text-slate-500">"Site admins already have full access to every case."</p>
+                                })}
                             </div>
                         }
                     }
