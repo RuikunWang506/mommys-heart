@@ -69,19 +69,19 @@ pub struct Contact {
     /// show why it matched. Empty when nothing is filtered.
     #[serde(default)]
     pub filtered_properties: Vec<(String, String)>,
-    /// Extra detail for the Clients and Volunteers views; `None` everywhere else.
+    /// Extra detail when filtering by Client or Volunteer; `None` otherwise.
     #[serde(default)]
     pub view_summary: Option<ContactViewSummary>,
 }
 
-/// What the Clients and Volunteers views add to each card.
+/// What a card adds when the list is filtered to clients or volunteers.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ContactViewSummary {
     /// Pending, open or monitored cases the person is on.
     pub active_cases: i64,
-    /// Closed cases (Clients view only).
+    /// Closed cases (clients only).
     pub closed_cases: i64,
-    /// The volunteer application's status as a label (Volunteers view only).
+    /// The volunteer application's status as a label (volunteers only).
     pub volunteer_status: String,
 }
 

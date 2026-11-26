@@ -798,77 +798,7 @@ pub fn NewContactPage() -> impl IntoView {
     })
 }
 
-/// The ready-made views: each sets the contact-type filter, and the Clients and
-/// Volunteers views add case and application detail to every card.
-const CONTACT_VIEWS: [(&str, &str, &str); 3] = [
-    ("", "All contacts", "Everyone in the directory."),
-    (
-        "client",
-        "Clients",
-        "Client contacts, with how many current and closed cases each has.",
-    ),
-    (
-        "volunteer",
-        "Volunteers",
-        "Volunteer contacts, with their application status and current cases.",
-    ),
-];
-
-#[component]
-fn ContactViewTabs(contact_type: RwSignal<String>, offset: RwSignal<i64>) -> impl IntoView {
-    let state = expect_context::<AppState>();
-    // Case and application detail is admin-only, so others get the plain list.
-    let shows_detail = state.has_operations_admin_permissions();
-    let description = move || {
-        let current = contact_type.get();
-        CONTACT_VIEWS
-            .iter()
-            .find(|(slug, _, _)| *slug == current)
-            .map(|(slug, _, text)| {
-                if slug.is_empty() || shows_detail {
-                    (*text).to_string()
-                } else {
-                    "Filtered to this contact type.".to_string()
-                }
-            })
-            .unwrap_or_else(|| "Filtered by the contact type chosen on the left.".to_string())
-    };
-    view! {
-        <div class="space-y-1.5">
-            <div class="flex flex-wrap gap-2" role="group" aria-label="Contact views">
-                {CONTACT_VIEWS
-                    .iter()
-                    .map(|(slug, label, _)| {
-                        let slug = *slug;
-                        let selected = move || contact_type.get() == slug;
-                        view! {
-                            <button
-                                type="button"
-                                aria-pressed=move || selected().to_string()
-                                on:click=move |_| {
-                                    offset.set(0);
-                                    contact_type.set(slug.to_string());
-                                }
-                                class=move || {
-                                    if selected() {
-                                        "rounded-full bg-primary-500 px-4 py-1.5 text-sm font-semibold text-white"
-                                    } else {
-                                        "rounded-full border border-slate-700 px-4 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800"
-                                    }
-                                }
-                            >
-                                {*label}
-                            </button>
-                        }
-                    })
-                    .collect_view()}
-            </div>
-            <p class="text-xs text-slate-500">{description}</p>
-        </div>
-    }
-}
-
-/// One line for a card in the Clients or Volunteers view.
+/// The extra card line shown when the list is filtered to clients or volunteers.
 fn view_summary_text(summary: &ContactViewSummary) -> String {
     let current = match summary.active_cases {
         0 => "No current cases".to_string(),
@@ -897,6 +827,8 @@ fn ContactsDirectory() -> impl IntoView {
     // Importing writes records wholesale, so it needs the admin gate the mail
     // tool has rather than the bulk-edit one.
     let can_import = can_send_mail;
+    // The server adds case and application detail for admins only.
+    let shows_type_detail = state.has_operations_admin_permissions();
 
     // Seed every filter from the query string, so a shared link opens the view
     // its sender was looking at.
@@ -1289,6 +1221,9 @@ fn ContactsDirectory() -> impl IntoView {
                         </select>
                         <p class="mt-1 text-xs text-slate-500">
                             "Matches contacts that include the selected type."
+                            {shows_type_detail.then_some(
+                                " Client adds each contact's case counts; Volunteer adds application status and current cases.",
+                            )}
                         </p>
                     </label>
                     <label class="block">
@@ -1347,7 +1282,6 @@ fn ContactsDirectory() -> impl IntoView {
                     </p>
                 </aside>
                 <section class="space-y-3">
-                    <ContactViewTabs contact_type=contact_type offset=offset />
                     <div class="flex flex-col gap-2 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
                         <span>
                             "Showing " {move || contacts.get().len()} " of "
